@@ -1,0 +1,14 @@
+{
+	"hash": "d41d8cd98f00b204e9800998ecf8427e",
+	"updated": "2022-06-01T21:42:10.0588396-03:00",
+	"installedModules": {
+		"github.com/chacalfloripa/demobase": {
+			"name": "demobase",
+			"version": "v0.0.2",
+			"hash": "2a7f8187a3754b472ba4149f0968c7c1",
+			"artifacts": {},
+			"failed": false,
+			"changed": false
+		}
+	}
+}
