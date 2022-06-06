@@ -47,6 +47,7 @@ type
                       ATrans : TSQLTransaction = nil); virtual;
     //
     function getTransaction(AOwner: TComponent) : TSQLTransaction;
+    function getSequence(const ASequenceName:string) : String; virtual;
     function getQuery(const ASQL : string;
                       ATrans : TSQLTransaction = nil):TSQLQuery; virtual;
     function getDataSet(const ATableName : string;
@@ -162,8 +163,6 @@ type
     //
 
     //
-    function getSeq(const SeqName:string) : String; virtual;
-    //
     function renameField(const ATable:String;
                          const AField:String;
                          const ANewField:String):Boolean;
@@ -276,6 +275,34 @@ begin
   Result := TSQLTransaction.Create(AOwner);
   Result.SQLConnection := FDBConn;
   addLog('Fim do TChfDBConnection.getTransaction');
+end;
+
+function TChfDBConnection.getSequence(const ASequenceName: string): String;
+var
+  LsSQL : string = '';
+  LoQuery : TSQLQuery;
+begin
+  case DBType of
+    dbtFirebird : LsSQL := 'select gen_id('+ASequenceName.ToUpper+', 1) as seq from RDB$DATABASE';
+    dbtMSSQLServer : LsSQL := 'SELECT NEXT VALUE FOR dbo.'+ASequenceName.ToUpper+' as seq;';
+  end;
+
+  LoQuery := getQuery(LsSQL, nil);
+  try
+    try
+      LoQuery.Open;
+      if not LoQuery.IsEmpty then
+        Result := LoQuery.FieldByName('seq').AsString
+      else
+        raise Exception.Create('Error: CONN-0006');
+      LoQuery.Close;
+    except
+      on e: Exception do
+        raise Exception.Create('Error: CONN-0007'+#13+e.Message);
+    end;
+  finally
+     FreeAndNil(LoQuery);
+  end;
 end;
 
 function TChfDBConnection.getQuery(const ASQL: string; ATrans: TSQLTransaction

@@ -24,6 +24,7 @@ type
     Button16: TButton;
     Button17: TButton;
     Button18: TButton;
+    Button19: TButton;
     Button2: TButton;
     Button3: TButton;
     Button4: TButton;
@@ -47,6 +48,7 @@ type
     edtNomeTabelaAbrir: TEdit;
     edtFieldSize: TEdit;
     edtNomeCampo: TEdit;
+    edtNumSequence: TEdit;
     edtSequenceInicial: TEdit;
     edtSequenceInc: TEdit;
     edtNomeTabelaCampo: TEdit;
@@ -62,6 +64,7 @@ type
     Label16: TLabel;
     Label17: TLabel;
     Label18: TLabel;
+    Label19: TLabel;
     Label2: TLabel;
     Label3: TLabel;
     Label4: TLabel;
@@ -107,6 +110,7 @@ type
     procedure Button16Click(Sender: TObject);
     procedure Button17Click(Sender: TObject);
     procedure Button18Click(Sender: TObject);
+    procedure Button19Click(Sender: TObject);
     procedure Button2Click(Sender: TObject);
     procedure Button3Click(Sender: TObject);
     procedure Button4Click(Sender: TObject);
@@ -212,6 +216,21 @@ begin
 end;
 
 procedure TForm1.Button18Click(Sender: TObject);
+begin
+  if Assigned(FDBConnection) and FDBConnection.Connected then
+  begin
+    if Trim(edtNomeSequence.Text) <> '' then
+    begin
+      edtNumSequence.Text := FDBConnection.getSequence(edtNomeSequence.Text);
+    end
+    else
+      ShowMessage('O nome do sequence deve ser informado.');
+  end
+  else
+    ShowMessage('Sem conexão com o banco de dados.');
+end;
+
+procedure TForm1.Button19Click(Sender: TObject);
 begin
   ShowMessage('Não implementado.');
 end;
