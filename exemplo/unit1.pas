@@ -26,6 +26,9 @@ type
     Button18: TButton;
     Button19: TButton;
     Button2: TButton;
+    Button20: TButton;
+    Button21: TButton;
+    Button22: TButton;
     Button3: TButton;
     Button4: TButton;
     Button5: TButton;
@@ -34,7 +37,9 @@ type
     Button8: TButton;
     Button9: TButton;
     cbxObrigatorio: TCheckBox;
+    cbxObrigatorioForeignKey: TCheckBox;
     cmbDefTipoPrimaryKey: TComboBox;
+    cmbTipoCampoForeignKey: TComboBox;
     cmbTipoCampo: TComboBox;
     cmbTipoDB: TComboBox;
     cmbTipoPrimaryKey: TComboBox;
@@ -45,13 +50,19 @@ type
     edtDefPrimaryKeyName: TEdit;
     edtDefPrimaryKeySize: TEdit;
     edtExistTabela: TEdit;
-    edtNomeTabelaAbrir: TEdit;
     edtFieldSize: TEdit;
+    edtFieldSizeForeignKey: TEdit;
     edtNomeCampo: TEdit;
+    edtNomeCampoForeignKey: TEdit;
+    edtNomeCampoForeignKeyRef: TEdit;
+    edtNomeTabelaAbrir: TEdit;
+    edtNomeTabelaCampo: TEdit;
+    edtNomeTabelaForeignKey: TEdit;
+    edtNomeTabelaForeignKeyRef: TEdit;
+    edtNomeForeignKey: TEdit;
     edtNumSequence: TEdit;
     edtSequenceInicial: TEdit;
     edtSequenceInc: TEdit;
-    edtNomeTabelaCampo: TEdit;
     edtNomeSequence: TEdit;
     edtPrimaryKeyName: TEdit;
     edtPrimaryKeySize: TEdit;
@@ -66,6 +77,14 @@ type
     Label18: TLabel;
     Label19: TLabel;
     Label2: TLabel;
+    Label20: TLabel;
+    Label21: TLabel;
+    Label22: TLabel;
+    Label23: TLabel;
+    Label24: TLabel;
+    Label25: TLabel;
+    Label26: TLabel;
+    Label27: TLabel;
     Label3: TLabel;
     Label4: TLabel;
     Label5: TLabel;
@@ -81,7 +100,6 @@ type
     memConfigSQLite3: TSynEdit;
     memConsultaSQL: TMemo;
     PageControl1: TPageControl;
-    SQLQuery1: TSQLQuery;
     tabParamConnSQLite: TPageControl;
     Panel1: TPanel;
     Panel2: TPanel;
@@ -98,6 +116,7 @@ type
     tabEstruturaTabela: TTabSheet;
     tabEstruturaSequence: TTabSheet;
     tabEstruturaCampos: TTabSheet;
+    tabForeignKey: TTabSheet;
     TabSheet3: TTabSheet;
     TabSheet4: TTabSheet;
     TabSheet5: TTabSheet;
@@ -111,6 +130,9 @@ type
     procedure Button17Click(Sender: TObject);
     procedure Button18Click(Sender: TObject);
     procedure Button19Click(Sender: TObject);
+    procedure Button20Click(Sender: TObject);
+    procedure Button21Click(Sender: TObject);
+    procedure Button22Click(Sender: TObject);
     procedure Button2Click(Sender: TObject);
     procedure Button3Click(Sender: TObject);
     procedure Button4Click(Sender: TObject);
@@ -233,6 +255,112 @@ end;
 procedure TForm1.Button19Click(Sender: TObject);
 begin
   ShowMessage('Não implementado.');
+end;
+
+procedure TForm1.Button20Click(Sender: TObject);
+begin
+  if Assigned(FDBConnection) and FDBConnection.Connected then
+  begin
+    try
+      if Trim(edtNomeForeignKey.Text) = '' then
+        raise Exception.Create('O nome da ForeignKey deve ser informada.');
+      if Trim(edtNomeTabelaForeignKey.Text) = '' then
+        raise Exception.Create('O nome da tabela de origem da ForeignKey deve ser informada.');
+      if Trim(edtNomeCampoForeignKeyRef.Text) = '' then
+        raise Exception.Create('O nome da tabela de referência da ForeignKey deve ser informada.');
+      if Trim(edtNomeCampoForeignKey.Text) = '' then
+        raise Exception.Create('O nome d campo de orgigem da ForeignKey deve ser informado.');
+      if Trim(edtNomeCampoForeignKeyRef.Text) = '' then
+        raise Exception.Create('O nome do campode referência da ForeignKey deve ser informado.');
+      //
+      FDBConnection.addForeignKey(edtNomeForeignKey.Text,
+                                  edtNomeTabelaForeignKey.Text,
+                                  edtNomeCampoForeignKey.Text,
+                                  edtNomeTabelaForeignKeyRef.Text,
+                                  edtNomeCampoForeignKeyRef.Text,
+                                  nil);
+      ShowMessage('ForeignKey criada com sucesso.')
+    except
+      on e : Exception do
+      begin
+        ShowMessage(e.Message);
+        exit;
+      end;
+    end;
+  end
+  else
+    ShowMessage('Sem conexão com o banco de dados.');
+end;
+
+procedure TForm1.Button21Click(Sender: TObject);
+begin
+  if Assigned(FDBConnection) and FDBConnection.Connected then
+  begin
+    if Trim(edtNomeForeignKey.Text) <> '' then
+    begin
+      if FDBConnection.existForeignKey(edtNomeForeignKey.Text, nil) then
+        ShowMessage('ForeignKey existe.')
+      else
+        ShowMessage('ForeignKey não existe.')
+    end
+    else
+      ShowMessage('O nome da ForeignKey deve ser informado.');
+  end
+  else
+    ShowMessage('Sem conexão com o banco de dados.');
+end;
+
+procedure TForm1.Button22Click(Sender: TObject);
+var
+  LoFieldType : TFieldType;
+  LiFieldSize : Integer;
+begin
+  if Assigned(FDBConnection) and FDBConnection.Connected then
+  begin
+    try
+      if Trim(edtNomeForeignKey.Text) = '' then
+        raise Exception.Create('O nome da ForeignKey deve ser informada.');
+      if Trim(edtNomeTabelaForeignKey.Text) = '' then
+        raise Exception.Create('O nome da tabela de origem da ForeignKey deve ser informada.');
+      if Trim(edtNomeCampoForeignKeyRef.Text) = '' then
+        raise Exception.Create('O nome da tabela de referência da ForeignKey deve ser informada.');
+      if Trim(edtNomeCampoForeignKey.Text) = '' then
+        raise Exception.Create('O nome d campo de orgigem da ForeignKey deve ser informado.');
+      if Trim(edtNomeCampoForeignKeyRef.Text) = '' then
+        raise Exception.Create('O nome do campode referência da ForeignKey deve ser informado.');
+      //
+      case cmbTipoCampoForeignKey.ItemIndex of
+        0 : LoFieldType := FDBConnection.DefPrimaryKeyFieldType;
+        1 : LoFieldType := ftSmallint;
+        2 : LoFieldType := ftInteger;
+        3 : LoFieldType := ftLargeint;
+        4 : LoFieldType := ftString;
+        5 : LoFieldType := ftGuid;
+      end;
+      //
+      LiFieldSize := StrToInt(edtFieldSizeForeignKey.Text);
+
+
+      FDBConnection.addFieldForeignKey(edtNomeForeignKey.Text,
+                                       edtNomeTabelaForeignKey.Text,
+                                       edtNomeCampoForeignKey.Text,
+                                       edtNomeTabelaForeignKeyRef.Text,
+                                       edtNomeCampoForeignKeyRef.Text,
+                                       LoFieldType,
+                                       LiFieldSize,
+                                       cbxObrigatorioForeignKey.Checked,
+                                       nil);
+      ShowMessage('ForeignKey criada com sucesso.')
+    except
+      on e : Exception do
+      begin
+        ShowMessage(e.Message);
+        exit;
+      end;
+    end;
+  end
+  else
+    ShowMessage('Sem conexão com o banco de dados.');
 end;
 
 procedure TForm1.Button11Click(Sender: TObject);

@@ -78,10 +78,26 @@ type
                        const ASize : Integer = 0;
                        const ARequerid : Boolean = False;
                        ATrans : TSQLTransaction = nil); virtual;
+    procedure addFieldForeignKey(const AForeignKey:String;
+                                 const ATable : String;
+                                 const AField : String;
+                                 const ATableRef : String;
+                                 const AFieldRef : String;
+                                 const ADataType : TFieldType;
+                                 const ASize : Integer = 0;
+                                 const ARequired : Boolean = False;
+                                 ATrans : TSQLTransaction = nil);
     procedure addSequence(const ASequenceName: string;
                           const ANumStart : Integer = 0;
                           const ANumInc : Integer = 1;
                           ATrans : TSQLTransaction = nil);
+    function addForeignKey(const AForeignKeyName:String;
+                           const ATableName : String;
+                           const AFieldName : String;
+                           const ATableNameRef : String;
+                           const AFieldNameRef : String;
+                           ATrans : TSQLTransaction = nil):Boolean; virtual;
+
     //
     procedure dropTable(const ATableName : string;
                         ATrans : TSQLTransaction = nil);
@@ -94,6 +110,8 @@ type
     function existField(const ATableName: string;
                         const AFieldName: string;
                         ATrans : TSQLTransaction = nil):Boolean;
+    function existForeignKey(const AForeignKeyName: String;
+                             ATrans : TSQLTransaction = nil): Boolean;
     function existSequence(const ASequenceName: string;
                            ATrans : TSQLTransaction = nil): Boolean;
     // Propertys
@@ -113,11 +131,6 @@ type
 
     procedure ExecScript(const ASQLs : array of string); virtual; abstract;
 
-    function addForeignKey(const AForeignKeyName:String;
-                           const ATableName : String;
-                           const AFieldName : String;
-                           const ATableNameRef : String;
-                           const AFieldNameRef : String):Boolean; virtual;
     function addFieldUnique(const AUnique:String;
                             const ATable : String;
                             const AField : String;
@@ -127,15 +140,6 @@ type
     function addUnique(const prUnique:String;
                        const prTable : String;
                        const prField : String):Boolean;
-    function addFieldfk(const AForeignKey:String;
-                         const ATable : String;
-                         const AField : String;
-                         const ATableRef : String;
-                         const AFieldRef : String;
-                         ADataType : TFieldType;
-                         ASize : Integer = 0;
-                         ARequired : Boolean = False):Boolean;
-    function addSequence(const AGenName: string): Boolean;
     //
 
     function dropIndex(const AIndexName : String):Boolean;
@@ -413,8 +417,9 @@ begin
       end;
     ftInteger :
       begin
-        if DBType = dbtFirebird then
+        if DBType in [dbtFirebird, dbtMSSQLServer] then
           Result := 'INT'+IfThen(ARequired, ' NOT NULL', '');
+
         if DBType = dbtSQLite3 then
           Result := 'INTEGER'+IfThen(ARequired, ' NOT NULL DEFAULT 0 ', '');
       end;
@@ -505,7 +510,7 @@ begin
       end;
     end;
     //
-    LsSQL := LsSQL + '); ';
+    LsSQL := LsSQL + ')';
     ExecSQL(LsSQL, ATrans);
     //
     // Firebird, MSSQL
@@ -515,7 +520,7 @@ begin
       begin
         LsSQL := ' ALTER TABLE '+ UpperCase(ATableName);
         LsSQL := LsSQL + ' ADD CONSTRAINT PK_'+UpperCase( ATableName )+LsFieldName;
-        LsSQL := LsSQL + ' PRIMARY KEY ( '+LsFieldName+' ); ';
+        LsSQL := LsSQL + ' PRIMARY KEY ( '+LsFieldName+' ) ';
         ExecSQL(LsSQL, ATrans);
       end;
     end;
@@ -534,6 +539,15 @@ begin
                     ' add '+UpperCase(AFieldName)+' '+ getStrSQLFieldType(AFieldType, ASize, ARequerid);
     ExecSQL(LsSQL, ATrans);
   end;
+end;
+
+procedure TChfDBConnection.addFieldForeignKey(const AForeignKey: String;
+  const ATable: String; const AField: String; const ATableRef: String;
+  const AFieldRef: String; const ADataType: TFieldType; const ASize: Integer;
+  const ARequired: Boolean; ATrans: TSQLTransaction);
+begin
+  addField(ATable, AField, ADataType, ASize, ARequired);
+  addForeignKey(AForeignKey, ATable, AField, ATableRef, AFieldRef);
 end;
 
 procedure TChfDBConnection.addSequence(const ASequenceName: string;
@@ -560,6 +574,43 @@ begin
   end
   else
     raise Exception.Create('Error: CONN-0003'+#13+'Sequence('+ASequenceName.ToUpper+') já existe no banco de dados.');
+end;
+
+function TChfDBConnection.addForeignKey(const AForeignKeyName: String;
+  const ATableName: String; const AFieldName: String;
+  const ATableNameRef: String; const AFieldNameRef: String;
+  ATrans: TSQLTransaction): Boolean;
+var
+  LsSQL : String = '';
+begin
+  if DBType = dbtSQLite3 then
+    raise Exception.Create('Banco SQLite3 sem suporte a ForeignKey.');
+  if not existTable(ATableName, ATrans) then
+    raise Exception.Create('Tabela "'+ATableName+'" não existe.');
+  if not existTable(ATableNameRef, ATrans) then
+    raise Exception.Create('Tabela "'+ATableNameRef+'" não existe.');
+  if not existfield(ATableName, AFieldName, ATrans) then
+    raise Exception.Create('Campo "'+AFieldName+'" não existe na tabela "'+ATableName+'".');
+  if not existfield(ATableNameRef, AFieldNameRef, ATrans) then
+    raise Exception.Create('Campo "'+AFieldNameRef+'" não existe na tabela "'+ATableNameRef+'".');
+  //
+  if not existForeignKey(AForeignKeyName, ATrans) then
+  begin
+    case DBType of
+         dbtFirebird : LsSQL := 'ALTER TABLE '+ATableName.ToUpper+' '+
+                                'ADD CONSTRAINT '+AForeignKeyName.ToUpper+' '+
+                                'FOREIGN KEY ('+AFieldName.ToUpper+') '+
+                                'REFERENCES '+ATableNameRef.ToUpper+'('+AFieldNameRef.ToUpper+')';
+      dbtMSSQLServer : LsSQL := 'ALTER TABLE dbo.'+ATableName.ToUpper+' '+
+                                'ADD CONSTRAINT '+AForeignKeyName.ToUpper+' '+
+                                'FOREIGN KEY ('+AFieldName.ToUpper+') '+
+                                'REFERENCES  dbo.'+ATableNameRef.ToUpper+'('+AFieldNameRef.ToUpper+')';
+    end;
+    if not LsSQL.IsEmpty then
+      ExecSQL(LsSQL)
+    else
+      raise Exception.Create('Error: CONN-0008'+#13+'Função não existe para o DB');
+  end;
 end;
 
 procedure TChfDBConnection.dropTable(const ATableName: string;
@@ -643,6 +694,55 @@ begin
   end;
 end;
 
+function TChfDBConnection.existForeignKey(const AForeignKeyName: String;
+  ATrans: TSQLTransaction): Boolean;
+var
+  LsSQL : string;
+  LoQuery : TSQLQuery;
+begin
+  Result := False;
+  if DBType = dbtSQLite3 then
+    raise Exception.Create('Banco SQLite3 sem suporte a ForeignKey.');
+
+  case DBType of
+       dbtFirebird : LsSQL := 'select 0 '+
+                              '  from RDB$RELATION_CONSTRAINTS  '+
+                              ' where RDB$CONSTRAINT_NAME =  '+ QuotedStr(AForeignKeyName.ToUpper);
+    dbtMSSQLServer : LsSQL := 'SELECT name '+
+                              '  FROM sys.foreign_keys '+
+                              ' where name = '+QuotedStr(AForeignKeyName.ToUpper);
+  end;
+  if not LsSQL.IsEmpty then
+  begin
+    LoQuery := getQuery(LsSQL, ATrans);
+    try
+      LoQuery.Open;
+      if not LoQuery.IsEmpty then
+        Result := True;
+      LoQuery.Close;
+    finally
+      FreeAndNil(LoQuery);
+    end;
+  end
+  else
+    raise Exception.Create('Error: CONN-0008'+#13+'Função não existe para o DB');
+(*
+    if (UpperCase(Driver) = UpperCase(ctDriveFB)) then
+  begin
+    Result := False;
+    sSQL := 'select 0 '+
+            '  from RDB$RELATION_CONSTRAINTS  '+
+            ' where RDB$CONSTRAINT_NAME =  '+ QuotedStr(ForeignKeyName);
+    with getQuery(sSQL) do
+    begin
+      if not IsEmpty then
+        Result := True;
+      Close;
+      Free;
+    end;
+  end; *)
+end;
+
 function TChfDBConnection.existSequence(const ASequenceName: string;
   ATrans: TSQLTransaction): Boolean;
 var
@@ -704,7 +804,7 @@ begin
     if FParams.Strings[LiCount].StartsWith('Charset=') then
       FCharset := FParams.Strings[LiCount].Substring(FParams.Strings[LiCount].IndexOf('=')+1)
     else
-      FParamsEx.Add(FParams.Strings[LiCount].ToLower);
+      FParamsEx.Add(FParams.Strings[LiCount].Trim.ToLower);
 
     addLog('Carregando parâmetro: '+FParams.Strings[LiCount]);
     Inc(LiCount);

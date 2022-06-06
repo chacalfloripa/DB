@@ -65,9 +65,9 @@ inherited Form1: TForm1
         Height = 456
         Top = 41
         Width = 1007
-        ActivePage = tabParamsConexao
+        ActivePage = TabSheet3
         Align = alClient
-        TabIndex = 0
+        TabIndex = 2
         TabOrder = 1
         object tabParamsConexao: TTabSheet
           Caption = 'Parâmetros Conexão'
@@ -2198,7 +2198,7 @@ inherited Form1: TForm1
             Top = 0
             Width = 999
             HorzScrollBar.Page = 974
-            VertScrollBar.Page = 133
+            VertScrollBar.Page = 205
             Align = alClient
             ClientHeight = 424
             ClientWidth = 995
@@ -2209,9 +2209,9 @@ inherited Form1: TForm1
               Height = 424
               Top = 0
               Width = 995
-              ActivePage = tabEstruturaSequence
+              ActivePage = tabForeignKey
               Align = alClient
-              TabIndex = 2
+              TabIndex = 3
               TabOrder = 0
               object tabEstruturaTabela: TTabSheet
                 Caption = 'Tabela'
@@ -2429,15 +2429,6 @@ inherited Form1: TForm1
                   OnClick = Button7Click
                   TabOrder = 3
                 end
-                object Button10: TButton
-                  Left = 8
-                  Height = 25
-                  Top = 80
-                  Width = 166
-                  Caption = 'Eliminar Campo'
-                  OnClick = Button10Click
-                  TabOrder = 4
-                end
                 object Button12: TButton
                   Left = 8
                   Height = 25
@@ -2445,7 +2436,7 @@ inherited Form1: TForm1
                   Width = 166
                   Caption = 'Criar Campo'
                   OnClick = Button12Click
-                  TabOrder = 5
+                  TabOrder = 4
                 end
                 object Label16: TLabel
                   Left = 624
@@ -2474,7 +2465,7 @@ inherited Form1: TForm1
                     'ftString'
                     'ftBlob'
                   )
-                  TabOrder = 6
+                  TabOrder = 5
                   Text = 'ftString'
                 end
                 object Label17: TLabel
@@ -2490,7 +2481,7 @@ inherited Form1: TForm1
                   Top = 27
                   Width = 91
                   Alignment = taCenter
-                  TabOrder = 7
+                  TabOrder = 6
                   Text = '0'
                 end
                 object cbxObrigatorio: TCheckBox
@@ -2499,6 +2490,15 @@ inherited Form1: TForm1
                   Top = 31
                   Width = 86
                   Caption = 'Obrigatório?'
+                  TabOrder = 7
+                end
+                object Button10: TButton
+                  Left = 8
+                  Height = 25
+                  Top = 80
+                  Width = 166
+                  Caption = 'Eliminar Campo'
+                  OnClick = Button10Click
                   TabOrder = 8
                 end
               end
@@ -2603,6 +2603,165 @@ inherited Form1: TForm1
                   Top = 56
                   Width = 55
                   Caption = 'Núm. Seq.'
+                end
+              end
+              object tabForeignKey: TTabSheet
+                Caption = 'ForeignKey'
+                ClientHeight = 396
+                ClientWidth = 987
+                object Button20: TButton
+                  Left = 8
+                  Height = 25
+                  Top = 152
+                  Width = 166
+                  Caption = 'Criar ForeignKey'
+                  OnClick = Button20Click
+                  TabOrder = 0
+                end
+                object Label20: TLabel
+                  Left = 312
+                  Height = 15
+                  Top = 120
+                  Width = 69
+                  Caption = 'Nome Tabela'
+                end
+                object edtNomeTabelaForeignKey: TEdit
+                  Left = 8
+                  Height = 23
+                  Top = 75
+                  Width = 218
+                  TabOrder = 1
+                end
+                object Label21: TLabel
+                  Left = 232
+                  Height = 15
+                  Top = 56
+                  Width = 75
+                  Caption = 'Nome Campo'
+                end
+                object edtNomeCampoForeignKey: TEdit
+                  Left = 232
+                  Height = 23
+                  Top = 75
+                  Width = 209
+                  TabOrder = 2
+                end
+                object edtNomeTabelaForeignKeyRef: TEdit
+                  Left = 8
+                  Height = 23
+                  Top = 123
+                  Width = 218
+                  TabOrder = 3
+                end
+                object edtNomeCampoForeignKeyRef: TEdit
+                  Left = 232
+                  Height = 23
+                  Top = 123
+                  Width = 209
+                  TabOrder = 4
+                end
+                object Label23: TLabel
+                  Left = 232
+                  Height = 15
+                  Top = 104
+                  Width = 133
+                  Caption = 'Nome Campo Referência'
+                end
+                object Label24: TLabel
+                  Left = 8
+                  Height = 15
+                  Top = 8
+                  Width = 69
+                  Caption = 'Nome Tabela'
+                end
+                object edtNomeForeignKey: TEdit
+                  Left = 8
+                  Height = 23
+                  Top = 27
+                  Width = 218
+                  TabOrder = 5
+                end
+                object Label22: TLabel
+                  Left = 8
+                  Height = 15
+                  Top = 104
+                  Width = 127
+                  Caption = 'Nome Tabela Referência'
+                end
+                object Label25: TLabel
+                  Left = 8
+                  Height = 15
+                  Top = 56
+                  Width = 69
+                  Caption = 'Nome Tabela'
+                end
+                object Button21: TButton
+                  Left = 232
+                  Height = 25
+                  Top = 25
+                  Width = 209
+                  Caption = 'Existe ForeignKey'
+                  OnClick = Button21Click
+                  TabOrder = 6
+                end
+                object Button22: TButton
+                  Left = 176
+                  Height = 25
+                  Top = 152
+                  Width = 166
+                  Caption = 'Criar Field ForeignKey'
+                  OnClick = Button22Click
+                  TabOrder = 7
+                end
+                object Label26: TLabel
+                  Left = 448
+                  Height = 15
+                  Top = 56
+                  Width = 82
+                  Caption = 'Tipo do Campo'
+                end
+                object Label27: TLabel
+                  Left = 608
+                  Height = 15
+                  Top = 56
+                  Width = 91
+                  Caption = 'Tamanho Campo'
+                end
+                object edtFieldSizeForeignKey: TEdit
+                  Left = 608
+                  Height = 23
+                  Top = 75
+                  Width = 91
+                  Alignment = taCenter
+                  TabOrder = 8
+                  Text = '0'
+                end
+                object cbxObrigatorioForeignKey: TCheckBox
+                  Left = 704
+                  Height = 19
+                  Top = 79
+                  Width = 86
+                  Caption = 'Obrigatório?'
+                  TabOrder = 9
+                end
+                object cmbTipoCampoForeignKey: TComboBox
+                  Left = 448
+                  Height = 23
+                  Top = 75
+                  Width = 152
+                  ItemHeight = 15
+                  ItemIndex = 0
+                  Items.Strings = (
+                    'Padrão'
+                    'SmalIInt'
+                    'Integer'
+                    'BigInt'
+                    'String'
+                    'GUID'
+                    ''
+                  )
+                  TabOrder = 10
+                  Text = 'Padrão'
                 end
               end
             end
@@ -2738,12 +2897,5 @@ inherited Form1: TForm1
   object dsQuery: TDataSource[5]
     Left = 848
     Top = 8
-  end
-  object SQLQuery1: TSQLQuery[6]
-    FieldDefs = <>
-    Params = <>
-    Macros = <>
-    Left = 868
-    Top = 177
   end
 end
