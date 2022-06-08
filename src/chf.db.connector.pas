@@ -718,8 +718,11 @@ procedure TChfDBConnection.dropField(const ATableName: string;
 var
   LsSQL : string;
 begin
-  LsSQL := 'alter table '+ ATableName.ToUpper + ' drop ' + AFieldName.ToUpper;
-  ExecSQL(LsSQL, ATrans);
+  if existField(ATableName, AFieldName, ATrans) then
+  begin
+    LsSQL := 'alter table '+ ATableName.ToUpper + ' drop ' + AFieldName.ToUpper;
+    ExecSQL(LsSQL, ATrans);
+  end;
 end;
 
 function TChfDBConnection.existTable(const ATableName: String;
