@@ -87,10 +87,10 @@ type
                        const ARequerid : Boolean = False;
                        ATrans : TSQLTransaction = nil); virtual;
     procedure addFieldForeignKey(const AForeignKey:String;
-                                 const ATable : String;
-                                 const AField : String;
-                                 const ATableRef : String;
-                                 const AFieldRef : String;
+                                 const ATableName : String;
+                                 const AFieldName : String;
+                                 const ATableNameRef : String;
+                                 const AFieldNameRef : String;
                                  const ADataType : TFieldType;
                                  const ASize : Integer = 0;
                                  const ARequired : Boolean = False;
@@ -160,16 +160,6 @@ type
 (*    //
 
     procedure ExecScript(const ASQLs : array of string); virtual; abstract;
-
-    function addFieldUnique(const AUnique:String;
-                            const ATable : String;
-                            const AField : String;
-                            ADataType : TFieldType;
-                            ASize : Integer = 0;
-                            ARequired : Boolean = False):Boolean;
-    function addUnique(const prUnique:String;
-                       const prTable : String;
-                       const prField : String):Boolean;
     //
 
     function dropIndex(const AIndexName : String):Boolean;
@@ -181,13 +171,6 @@ type
     procedure setDefaultValue(const ATableName: string;
                               const AFieldName: string;
                               const AValue : string);
-    function setFieldNotNull(const ATable : String;
-                             const AField : String;
-                             const AValorPadrao: string):Boolean; virtual;
-    function setFieldNull(const ATable : String;
-                          const AField : String):Boolean; virtual;
-    function setFieldPK(const ATable : String;
-                        const AField : String):Boolean; virtual;
     //
 
     function existTrigger(const ATableName: string;
@@ -651,12 +634,12 @@ begin
 end;
 
 procedure TChfDBConnection.addFieldForeignKey(const AForeignKey: String;
-  const ATable: String; const AField: String; const ATableRef: String;
-  const AFieldRef: String; const ADataType: TFieldType; const ASize: Integer;
+  const ATableName: String; const AFieldName: String; const ATableNameRef: String;
+  const AFieldNameRef: String; const ADataType: TFieldType; const ASize: Integer;
   const ARequired: Boolean; ATrans: TSQLTransaction);
 begin
-  addField(ATable, AField, ADataType, ASize, ARequired);
-  addForeignKey(AForeignKey, ATable, AField, ATableRef, AFieldRef);
+  addField(ATableName, AFieldName, ADataType, ASize, ARequired);
+  addForeignKey(AForeignKey, ATableName, AFieldName, ATableNameRef, AFieldNameRef);
 end;
 
 procedure TChfDBConnection.addSequence(const ASequenceName: string;
