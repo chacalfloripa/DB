@@ -653,9 +653,17 @@ begin
     case DBType of
          dbtFirebird : LsSQL := 'CREATE GENERATOR '+ASequenceName.ToUpper+'; '+
                                 'SET GENERATOR '+ASequenceName.ToUpper+' TO '+ANumStart.ToString;
-      dbtMSSQLServer : LsSQL := 'CREATE SEQUENCE '+QuotedStr(ASequenceName.ToUpper)+
-                                '    START WITH '+ANumStart.ToString+
-                                '  INCREMENT BY '+ANumInc.ToString;
+      dbtMSSQLServer :
+        begin
+          LsSQL := 'CREATE SEQUENCE '+ASequenceName.ToUpper+
+                   '    START WITH 1'+
+                   '  INCREMENT BY '+ANumInc.ToString;
+          if (ANumStart <> 0) then
+          begin
+            LsSQL := LsSQL + ';';
+            LsSQL := LsSQL + 'ALTER SEQUENCE '+ASequenceName.ToUpper+' RESTART WITH '+ANumStart.ToString+';';
+          end;
+        end;
     end;
     if not LsSQL.IsEmpty then
     begin
