@@ -99,12 +99,12 @@ type
                           const ANumStart : Integer = 0;
                           const ANumInc : Integer = 1;
                           ATrans : TSQLTransaction = nil);
-    function addForeignKey(const AForeignKeyName:String;
+    procedure addForeignKey(const AForeignKeyName:String;
                            const ATableName : String;
                            const AFieldName : String;
                            const ATableNameRef : String;
                            const AFieldNameRef : String;
-                           ATrans : TSQLTransaction = nil):Boolean; virtual;
+                           ATrans : TSQLTransaction = nil); virtual;
     procedure addFieldUnique(const AUniqueName:String;
                             const ATableName : String;
                             const AFieldName : String;
@@ -685,10 +685,10 @@ begin
     raise Exception.Create('Error: CONN-0003'+#13+'Sequence('+ASequenceName.ToUpper+') já existe no banco de dados.');
 end;
 
-function TChfDBConnection.addForeignKey(const AForeignKeyName: String;
+procedure TChfDBConnection.addForeignKey(const AForeignKeyName: String;
   const ATableName: String; const AFieldName: String;
   const ATableNameRef: String; const AFieldNameRef: String;
-  ATrans: TSQLTransaction): Boolean;
+  ATrans: TSQLTransaction);
 var
   LsSQL : String = '';
 begin
