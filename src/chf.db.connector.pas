@@ -51,6 +51,8 @@ type
     function getQuery(const ASQL : string;
                       ATrans : TSQLTransaction = nil):TSQLQuery; virtual;
     function getDataSet(const ATableName : string;
+                        const AAutoActive : Boolean = True;
+                        const APacketRecords : Integer = -1;
                         ATrans : TSQLTransaction = nil):TSQLQuery; virtual;
     function getServeTime : TTime; virtual;
     function getServeDate : TDate; virtual;
@@ -330,9 +332,14 @@ begin
 end;
 
 function TChfDBConnection.getDataSet(const ATableName: string;
+  const AAutoActive : Boolean; const APacketRecords : Integer;
   ATrans: TSQLTransaction): TSQLQuery;
 begin
-  result := getQuery('select * from '+ATableName.ToUpper, ATrans);
+  Result := getQuery('select * from '+ATableName.ToUpper, ATrans);
+  Result.ReadOnly := False;
+  Result.PacketRecords := APacketRecords;
+  if AAutoActive then
+    Result.Open;
 end;
 
 function TChfDBConnection.getServeTime: TTime;
