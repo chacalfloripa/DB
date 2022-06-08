@@ -60,6 +60,9 @@ type
     function getStrSQLFieldType(const ADataType : TFieldType;
                                 const ASize : Integer = 0;
                                 const ARequired : Boolean = False):String;
+    function getStrSQLFieldTypeFromDB(const ATableName: string;
+                                      const AFieldName: string;
+                                      ATrans : TSQLTransaction = nil):String;
     //
     procedure addTable(const ATableName: string;
                        ATrans : TSQLTransaction = nil); overload;  virtual;
@@ -459,6 +462,32 @@ begin
       begin
         Result := 'BLOB SUB_TYPE 1 SEGMENT SIZE 16384 CHARACTER SET ISO8859_1 ';
       end;
+function TChfDBConnection.getStrSQLFieldTypeFromDB(const ATableName: string;
+  const AFieldName: string; ATrans: TSQLTransaction): String;
+var
+  LoQuery : TSQLQuery;
+  LsSQL : String = '';
+begin
+  if DBType in [dbtSQLite3, dbtPostgreSQL, dbtMySQL, dbtODBC, dbtOracle, dbtSybase] then
+    raise Exception.Create('Função(getStrSQLFieldTypeFromDB) não implementada para o banco '+GetEnumName(TypeInfo(TChfDBType), Ord(DBType)));
+  if not existTable(ATableName, ATrans) then
+     raise Exception.Create('A tabela "'+ATableName.ToUpper+'" não existe.');
+  if not existField(ATableName, AFieldName, ATrans) then
+     raise Exception.Create('A o campo "'+AFieldName+'" não existe na tabela "'+ATableName.ToUpper+'".');
+
+  LoQuery := getQuery('select '+AFieldName+' from '+ATableName+' where '+AFieldName+' is null', ATrans);
+  try
+    LoQuery.Open;
+    if LoQuery.Fields.Count > 0 then
+    begin
+      Result := getStrSQLFieldType(LoQuery.FieldByName(AFieldName).DataType,
+                                   LoQuery.FieldByName(AFieldName).DataSize,
+                                   LoQuery.FieldByName(AFieldName).Required);
+    end;
+  finally
+    FreeAndNil(LoQuery);
+  end;
+end;
   end;
 end;
 
