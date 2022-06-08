@@ -689,10 +689,16 @@ begin
   if not existForeignKey(AForeignKeyName, ATrans) then
   begin
     case DBType of
-         dbtFirebird : LsSQL := 'ALTER TABLE '+ATableName.ToUpper+' '+
-                                'ADD CONSTRAINT '+AForeignKeyName.ToUpper+' '+
-                                'FOREIGN KEY ('+AFieldName.ToUpper+') '+
-                                'REFERENCES '+ATableNameRef.ToUpper+'('+AFieldNameRef.ToUpper+')';
+         dbtFirebird :
+           begin
+             if AFieldNameRef.Length > 26 then
+               raise Exception.Create('O tamanho do nome de uma ForeignKey para o banco Firebird é de no máximo 26 caracteres.');
+             LsSQL := 'ALTER TABLE '+ATableName.ToUpper+' '+
+                      'ADD CONSTRAINT '+AForeignKeyName.ToUpper+' '+
+                      'FOREIGN KEY ('+AFieldName.ToUpper+') '+
+                      'REFERENCES '+ATableNameRef.ToUpper+'('+AFieldNameRef.ToUpper+')';
+
+           end;
       dbtMSSQLServer : LsSQL := 'ALTER TABLE dbo.'+ATableName.ToUpper+' '+
                                 'ADD CONSTRAINT '+AForeignKeyName.ToUpper+' '+
                                 'FOREIGN KEY ('+AFieldName.ToUpper+') '+
