@@ -141,6 +141,7 @@ type
                                  const AFieldName : String;
                                  ATrans : TSQLTransaction = nil); virtual;
     // Propertys
+    property DBConn : TSQLConnection read FDBConn;
     property DBType : TChfDBType read FDBType;
     property Params : String read getParams write setParams;
     property OnLog : TChfDBEventOnLog read FOnLog write FOnLog;
