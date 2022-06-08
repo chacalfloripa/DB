@@ -792,7 +792,7 @@ begin
                               'where a.RDB$GENERATOR_NAME = '+QuotedStr(ASequenceName.ToUpper);
     dbtMSSQLServer : LsSQL := 'select object_id '+
                               '  from sys.sequences '+
-                              ' where object_id = object_id('+'dbo.'+QuotedStr(ASequenceName.ToUpper)+')';
+                              ' where object_id = object_id('+QuotedStr('dbo.'+ASequenceName.ToUpper)+')';
   end;
   if not LsSQL.IsEmpty then
   begin
