@@ -102,7 +102,17 @@ type
                            const ATableNameRef : String;
                            const AFieldNameRef : String;
                            ATrans : TSQLTransaction = nil):Boolean; virtual;
-
+    procedure addFieldUnique(const AUniqueName:String;
+                            const ATableName : String;
+                            const AFieldName : String;
+                            const ADataType : TFieldType;
+                            const ASize : Integer = 0;
+                            const ARequired : Boolean = False;
+                            ATrans : TSQLTransaction = nil);
+    procedure addUnique(const AUniqueName:String;
+                        const ATableName : String;
+                        const AFieldName : String;
+                        ATrans : TSQLTransaction = nil);
     //
     procedure dropTable(const ATableName : string;
                         ATrans : TSQLTransaction = nil);
@@ -657,6 +667,40 @@ begin
       ExecSQL(LsSQL)
     else
       raise Exception.Create('Error: CONN-0008'+#13+'Função não existe para o DB');
+  end;
+end;
+
+procedure TChfDBConnection.addFieldUnique(const AUniqueName: String;
+  const ATableName: String; const AFieldName: String; const ADataType: TFieldType;
+  const ASize: Integer; const ARequired: Boolean; ATrans: TSQLTransaction
+  );
+begin
+  if DBType in [dbtSQLite3, dbtPostgreSQL, dbtMySQL, dbtODBC, dbtOracle, dbtSybase] then
+    raise Exception.Create('Função(addFieldUnique) não implementada para o banco '+GetEnumName(TypeInfo(TChfDBType), Ord(DBType)));
+  addField(ATableName, AFieldName, ADataType, ASize, ARequired, ATrans);
+  addUnique(AUniqueName, ATableName, AFieldName, ATrans);
+end;
+
+procedure TChfDBConnection.addUnique(const AUniqueName: String;
+  const ATableName: String; const AFieldName: String; ATrans: TSQLTransaction);
+var
+  LsSQL : String;
+begin
+  if DBType in [dbtSQLite3, dbtPostgreSQL, dbtMySQL, dbtODBC, dbtOracle, dbtSybase] then
+    raise Exception.Create('Função(addUnique) não implementada para o banco '+GetEnumName(TypeInfo(TChfDBType), Ord(DBType)));
+
+  case DBType of
+    dbtFirebird : LsSQL := ' ALTER TABLE '+ATableName.ToUpper+
+                           ' ADD CONSTRAINT '+AUniqueName.ToUpper+
+                           ' UNIQUE ('+AFieldName.ToUpper+') '+
+                           ' USING INDEX IDX_'+AUniqueName.ToUpper;
+    dbtMSSQLServer : LsSQL := ' ALTER TABLE dbo.'+ATableName.ToUpper+
+                              ' ADD CONSTRAINT '+AUniqueName.ToUpper+
+                              ' UNIQUE ('+AFieldName.ToUpper+')';
+  end;
+  if existField(ATableName, AFieldName) then
+  begin
+    ExecSQL(LsSQL);
   end;
 end;
 
