@@ -419,6 +419,8 @@ begin
       begin
         if DBType = dbtFirebird then
           Result := 'SMALLINT'+IfThen(ARequired, ' NOT NULL', '');
+        if DBType = dbtMSSQLServer then
+          Result := 'BIT'+IfThen(ARequired, ' NOT NULL', '');
         if DBType = dbtSQLite3 then
           Result := 'BOOLEAN'+IfThen(ARequired, ' NOT NULL DEFAULT 0 ', '');;
       end;
@@ -426,24 +428,38 @@ begin
       begin
         if DBType = dbtFirebird then
           Result := 'NUMERIC(12,2)'+IfThen(ARequired, ' NOT NULL', '');
+        if DBType = dbtMSSQLServer then
+          Result := 'NUMERIC(12,2)'+IfThen(ARequired, ' NOT NULL', '');
+        if DBType = dbtSQLite3 then
+          Result := 'NUMERIC'+IfThen(ARequired, ' NOT NULL  DEFAULT 0 ', '');
+      end;
+    ftFloat :
+      begin
+        if DBType = dbtFirebird then
+          Result := 'NUMERIC(12,2)'+IfThen(ARequired, ' NOT NULL', '');
+        if DBType = dbtMSSQLServer then
+          Result := 'NUMERIC(12,2)'+IfThen(ARequired, ' NOT NULL', '');
         if DBType = dbtSQLite3 then
           Result := 'NUMERIC'+IfThen(ARequired, ' NOT NULL  DEFAULT 0 ', '');
       end;
     ftTime :
       begin
-        if DBType = dbtFirebird then
+        if DBType in [dbtFirebird, dbtMSSQLServer] then
           Result := 'TIME'+IfThen(ARequired, ' NOT NULL', '');
         if DBType = dbtSQLite3 then
           Result := 'DATETIME';
       end;
     ftDate :
       begin
-        Result := 'DATE'+IfThen(ARequired, ' NOT NULL', '');;
+        if DBType in [dbtFirebird, dbtMSSQLServer] then
+          Result := 'DATE'+IfThen(ARequired, ' NOT NULL', '');;
       end;
     ftDateTime :
       begin
         if DBType = dbtFirebird then
           Result := 'TIMESTAMP'+IfThen(ARequired, ' NOT NULL', '');;
+        if DBType = dbtMSSQLServer then
+          Result := 'DATETIME';
         if DBType = dbtSQLite3 then
           Result := 'DATETIME';
       end;
@@ -451,20 +467,22 @@ begin
       begin
         if DBType in [dbtFirebird, dbtMSSQLServer] then
           Result := 'INT'+IfThen(ARequired, ' NOT NULL', '');
-
         if DBType = dbtSQLite3 then
           Result := 'INTEGER'+IfThen(ARequired, ' NOT NULL DEFAULT 0 ', '');
       end;
     ftSmallint :
       begin
-        if DBType = dbtFirebird then
+        if DBType in [dbtFirebird, dbtMSSQLServer] then
           Result := 'smallint'+IfThen(ARequired, ' NOT NULL', '');
         if DBType = dbtSQLite3 then
           raise Exception.Create('Tipo ftSmallint não implementado para SQLite.');
       end;
     ftLargeint :
       begin
-        Result := 'BIGINT'+IfThen(ARequired, ' NOT NULL', '');
+        if DBType in [dbtFirebird, dbtMSSQLServer] then
+          Result := 'BIGINT'+IfThen(ARequired, ' NOT NULL', '');
+        if DBType = dbtSQLite3 then
+          raise Exception.Create('Tipo ftSmallint não implementado para SQLite.');
       end;
     ftString :
       begin
@@ -482,8 +500,16 @@ begin
       end;
     ftBlob :
       begin
-        Result := 'BLOB SUB_TYPE 1 SEGMENT SIZE 16384 CHARACTER SET ISO8859_1 ';
+        if DBType in [dbtFirebird] then
+          Result := 'BLOB SUB_TYPE 1 SEGMENT SIZE 16384 CHARACTER SET ISO8859_1 ';
+        if DBType in [dbtMSSQLServer] then
+          Result := 'BINARY';
+        if DBType = dbtSQLite3 then
+          raise Exception.Create('Tipo ftSmallint não implementado para SQLite.');
       end;
+  end;
+end;
+
 function TChfDBConnection.getStrSQLFieldTypeFromDB(const ATableName: string;
   const AFieldName: string; ATrans: TSQLTransaction): String;
 var
