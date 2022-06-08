@@ -1032,21 +1032,21 @@ begin
   LiCount := 0;
   repeat
     if FParams.Strings[LiCount].StartsWith('HostName=') then
-      FHostName := FParams.Strings[LiCount].Substring(FParams.Strings[LiCount].IndexOf('=')+1)
+      FHostName := Trim(FParams.Strings[LiCount].Substring(FParams.Strings[LiCount].IndexOf('=')+1))
     else
     if FParams.Strings[LiCount].StartsWith('DatabaseName=') then
-      FDatabaseName := FParams.Strings[LiCount].Substring(FParams.Strings[LiCount].IndexOf('=')+1)
+      FDatabaseName := Trim(FParams.Strings[LiCount].Substring(FParams.Strings[LiCount].IndexOf('=')+1))
     else
     if FParams.Strings[LiCount].StartsWith('UserName=') then
-      FUserName := FParams.Strings[LiCount].Substring(FParams.Strings[LiCount].IndexOf('=')+1)
+      FUserName := Trim(FParams.Strings[LiCount].Substring(FParams.Strings[LiCount].IndexOf('=')+1))
     else
     if FParams.Strings[LiCount].StartsWith('Password=') then
-      FPassword := FParams.Strings[LiCount].Substring(FParams.Strings[LiCount].IndexOf('=')+1)
+      FPassword := Trim(FParams.Strings[LiCount].Substring(FParams.Strings[LiCount].IndexOf('=')+1))
     else
     if FParams.Strings[LiCount].StartsWith('Charset=') then
-      FCharset := FParams.Strings[LiCount].Substring(FParams.Strings[LiCount].IndexOf('=')+1)
+      FCharset := Trim(FParams.Strings[LiCount].Substring(FParams.Strings[LiCount].IndexOf('=')+1))
     else
-      FParamsEx.Add(FParams.Strings[LiCount].Trim.ToLower);
+      FParamsEx.Add(Trim(FParams.Strings[LiCount].ToLower));
 
     addLog('Carregando parâmetro: '+FParams.Strings[LiCount]);
     Inc(LiCount);
