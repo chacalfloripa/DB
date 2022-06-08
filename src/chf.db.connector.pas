@@ -63,6 +63,9 @@ type
     function getStrSQLFieldTypeFromDB(const ATableName: string;
                                       const AFieldName: string;
                                       ATrans : TSQLTransaction = nil):String;
+    function getFieldFromDB(const ATableName: string;
+                            const AFieldName: string;
+                            ATrans : TSQLTransaction = nil):TField;
     //
     procedure addTable(const ATableName: string;
                        ATrans : TSQLTransaction = nil); overload;  virtual;
@@ -536,6 +539,28 @@ begin
     FreeAndNil(LoQuery);
   end;
 end;
+
+function TChfDBConnection.getFieldFromDB(const ATableName: string;
+  const AFieldName: string; ATrans: TSQLTransaction): TField;
+var
+  LoQuery : TSQLQuery;
+  LsSQL : String = '';
+begin
+  Result := nil;
+  if not existTable(ATableName, ATrans) then
+     raise Exception.Create('A tabela "'+ATableName.ToUpper+'" não existe.');
+  if not existField(ATableName, AFieldName, ATrans) then
+     raise Exception.Create('A o campo "'+AFieldName+'" não existe na tabela "'+ATableName.ToUpper+'".');
+
+  LoQuery := getQuery('select '+AFieldName+' from '+ATableName+' where '+AFieldName+' is null', ATrans);
+  try
+    LoQuery.Open;
+    if LoQuery.Fields.Count > 0 then
+      Result := LoQuery.FieldByName(AFieldName);
+
+    LoQuery.Close;
+  finally
+    FreeAndNil(LoQuery);
   end;
 end;
 
