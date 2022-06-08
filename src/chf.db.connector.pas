@@ -119,6 +119,17 @@ type
                              ATrans : TSQLTransaction = nil): Boolean;
     function existSequence(const ASequenceName: string;
                            ATrans : TSQLTransaction = nil): Boolean;
+    //
+    procedure setFieldNotNull(const ATableName : String;
+                              const AFieldName : String;
+                              const ADefValue: Variant;
+                              ATrans : TSQLTransaction = nil); virtual;
+    procedure setFieldNull(const ATableName : String;
+                           const AFieldName : String;
+                           ATrans : TSQLTransaction = nil); virtual;
+    procedure setFieldPrimaryKey(const ATableName : String;
+                                 const AFieldName : String;
+                                 ATrans : TSQLTransaction = nil); virtual;
     // Propertys
     property DBType : TChfDBType read FDBType;
     property Params : String read getParams write setParams;
@@ -808,6 +819,102 @@ begin
   end
   else
     raise Exception.Create('Error: CONN-0002'+#13+'Função não existe para o DB');
+end;
+
+procedure TChfDBConnection.setFieldNotNull(const ATableName: String;
+  const AFieldName: String; const ADefValue: Variant; ATrans: TSQLTransaction);
+var
+  LsSQL : String = '';
+  LoField : TField = nil;
+  LoQyery : TSQLQuery;
+begin
+  if DBType in [dbtSQLite3, dbtPostgreSQL, dbtMySQL, dbtODBC, dbtOracle, dbtSybase] then
+    raise Exception.Create('Função(setFieldNotNull) não implementada para o banco '+GetEnumName(TypeInfo(TChfDBType), Ord(DBType)));
+  case DBType of
+       dbtFirebird : LsSQL := 'ALTER TABLE '+ATableName.ToUpper+' ALTER '+AFieldName.ToUpper+' SET NOT NULL';
+    dbtMSSQLServer :
+      begin
+        LsSQL := 'ALTER TABLE '+ATableName.ToUpper+
+                 ' ALTER '+AFieldName.ToUpper + ' ';
+        LoField := getFieldFromDB(ATableName, AFieldName, ATrans);
+        LsSQL := LsSQL + getStrSQLFieldType(LoField.DataType, LoField.DataSize, True);
+      end;
+  end;
+  if not LsSQL.IsEmpty then
+  begin
+    LoQyery := getQuery('', ATrans);
+    try
+      LoQyery.Options := [sqoAutoApplyUpdates, sqoAutoCommit];
+      LoQyery.SQL.Clear;
+      LoQyery.SQL.Add('update '+ATableName.ToUpper+
+                      '   set '+AFieldName.ToUpper+' = :DefValue '+
+                      ' where '+AFieldName.ToUpper+' is null ');
+      LoQyery.ParamByName('DefValue').Value := ADefValue;
+      LoQyery.ExecSQL;
+      //
+      LoQyery.SQL.Clear;
+      LoQyery.SQL.Add(LsSQL);
+      LoQyery.ExecSQL;
+    finally
+      FreeAndNil(LoField);
+      FreeAndNil(LoQyery);
+    end;
+  end
+  else
+    raise Exception.Create('Error: CONN-0010'+#13+'Função não existe para o DB');
+end;
+
+procedure TChfDBConnection.setFieldNull(const ATableName: String;
+  const AFieldName: String; ATrans: TSQLTransaction);
+var
+  LsSQL : String = '';
+  LoField : TField;
+begin
+  if DBType in [dbtSQLite3, dbtPostgreSQL, dbtMySQL, dbtODBC, dbtOracle, dbtSybase] then
+    raise Exception.Create('Função(setFieldNull) não implementada para o banco '+GetEnumName(TypeInfo(TChfDBType), Ord(DBType)));
+
+  case DBType of
+       dbtFirebird : LsSQL := 'ALTER TABLE '+ATableName.ToUpper+' ALTER '+AFieldName.ToUpper+' SET NULL';
+    dbtMSSQLServer :
+      begin
+        LsSQL := 'ALTER TABLE '+ATableName.ToUpper+
+                 ' ALTER '+AFieldName.ToUpper + ' ';
+        LoField := getFieldFromDB(ATableName, AFieldName, ATrans);
+        LsSQL := LsSQL + getStrSQLFieldType(LoField.DataType, LoField.DataSize, False);
+      end;
+  end;
+
+  if not LsSQL.IsEmpty then
+  begin
+    ExecSQL(LsSQL, ATrans);
+  end
+  else
+    raise Exception.Create('Error: CONN-0011'+#13+'Função não existe para o DB');
+end;
+
+procedure TChfDBConnection.setFieldPrimaryKey(const ATableName: String;
+  const AFieldName: String; ATrans: TSQLTransaction);
+var
+  LsSQL : String = '';
+begin
+  if DBType in [dbtSQLite3, dbtPostgreSQL, dbtMySQL, dbtODBC, dbtOracle, dbtSybase] then
+    raise Exception.Create('Função(setFieldPK) não implementada para o banco '+GetEnumName(TypeInfo(TChfDBType), Ord(DBType)));
+
+  case DBType of
+       dbtFirebird : LsSQL := 'ALTER TABLE '+ ATableName.ToUpper+
+                              ' ADD CONSTRAINT PK_'+ATableName.ToUpper+'_ID'+
+                              ' PRIMARY KEY ( '+AFieldName.ToUpper+' ) ';
+    dbtMSSQLServer : LsSQL := 'ALTER TABLE '+ ATableName.ToUpper+
+                              ' ADD CONSTRAINT PK_'+ATableName.ToUpper+'_ID'+
+                              ' PRIMARY KEY ( '+AFieldName.ToUpper+' ) ';
+  end;
+
+  if not LsSQL.IsEmpty then
+  begin
+    ExecSQL(LsSQL, ATrans);
+  end
+  else
+    raise Exception.Create('Error: CONN-0012'+#13+'Função não existe para o DB');
 end;
 
 function TChfDBConnection.getParams: String;
