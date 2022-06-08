@@ -675,8 +675,8 @@ procedure TChfDBConnection.addForeignKey(const AForeignKeyName: String;
 var
   LsSQL : String = '';
 begin
-  if DBType = dbtSQLite3 then
-    raise Exception.Create('Banco SQLite3 sem suporte a ForeignKey.');
+  if DBType in [dbtSQLite3, dbtPostgreSQL, dbtMySQL, dbtODBC, dbtOracle, dbtSybase] then
+    raise Exception.Create('Função(addForeignKey) não implementada para o banco '+GetEnumName(TypeInfo(TChfDBType), Ord(DBType)));
   if not existTable(ATableName, ATrans) then
     raise Exception.Create('Tabela "'+ATableName+'" não existe.');
   if not existTable(ATableNameRef, ATrans) then
@@ -860,7 +860,7 @@ begin
     end;
   end
   else
-    raise Exception.Create('Error: CONN-0008'+#13+'Função não existe para o DB');
+    raise Exception.Create('Error: CONN-0009'+#13+'Função não existe para o DB');
 (*
     if (UpperCase(Driver) = UpperCase(ctDriveFB)) then
   begin
