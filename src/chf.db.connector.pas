@@ -122,6 +122,20 @@ type
     procedure dropField(const ATableName: string;
                         const AFieldName: string;
                         ATrans : TSQLTransaction = nil);
+    procedure dropForeignKey(const AForeignKeyName:String;
+                             const ATableName : String;
+                             ATrans : TSQLTransaction = nil);
+    procedure dropIndex(const ATableName : String;
+                        const AIndexName : String;
+                        ATrans : TSQLTransaction = nil);
+    //
+    procedure renameField(const ATableName:String;
+                          const AFieldName:String;
+                          const ANewFieldName:String;
+                          ATrans : TSQLTransaction = nil);
+    procedure renametable(const ATableName:String;
+                          const ANewTableName:String;
+                          ATrans : TSQLTransaction = nil);
     //
     function existTable(const ATableName: String;
                         ATrans : TSQLTransaction = nil): Boolean;
@@ -772,6 +786,74 @@ begin
     LsSQL := 'alter table '+ ATableName.ToUpper + ' drop ' + AFieldName.ToUpper;
     ExecSQL(LsSQL, ATrans);
   end;
+end;
+
+procedure TChfDBConnection.dropForeignKey(const AForeignKeyName: String;
+  const ATableName: String; ATrans: TSQLTransaction);
+var
+  LsSQL : String = '';
+begin
+  if existForeignKey(AForeignKeyName.ToUpper, ATrans) then
+  begin
+    LsSQL := ' ALTER TABLE '+ATableName.ToUpper+
+             ' DROP CONSTRAINT '+AForeignKeyName.ToUpper;
+    ExecSQL(LsSQL, ATrans);
+  end
+  else
+    raise Exception.Create('Error: CONN-0012'+#13+'Função não existe para o DB');
+end;
+
+procedure TChfDBConnection.dropIndex(const ATableName: String;
+  const AIndexName : String; ATrans: TSQLTransaction);
+var
+  LsSQL : string;
+begin
+  case DBType of
+    dbtFirebird : LsSQL := ' DROP INDEX '+AIndexName.ToUpper;
+    dbtMSSQLServer : LsSQL := ' DROP INDEX '+ATableName.ToUpper+'.'+AIndexName.ToUpper;
+  end;
+  ExecSQL(LsSQL, ATrans);
+end;
+
+procedure TChfDBConnection.renameField(const ATableName: String;
+  const AFieldName: String; const ANewFieldName: String; ATrans: TSQLTransaction
+  );
+var
+  LsSQL : String = '';
+begin
+  case DBType of
+   dbtFirebird :
+      begin
+        LsSQL := 'ALTER TABLE '+ATableName.ToUpper+' ALTER COLUMN '+AFieldName.ToUpper+' TO '+ANewFieldName.ToUpper;
+      end;
+    dbtMSSQLServer :
+      begin
+        LsSQL := 'exec sp_rename '+QuotedStr(ATableName.ToUpper+'.'+AFieldName)+ ', '+QuotedStr(ANewFieldName.ToUpper);
+      end;
+  end;
+  ExecSQL(LsSQL, ATrans);
+end;
+
+procedure TChfDBConnection.renametable(const ATableName: String;
+  const ANewTableName: String; ATrans: TSQLTransaction);
+var
+  LsSQL : String = '';
+begin
+  case DBType of
+   dbtFirebird :
+      begin
+        LsSQL := ' UPDATE RDB$RELATIONS SET RDB$RELATION_NAME='+QuotedStr(ANewTableName.ToUpper)+
+                 '  WHERE RDB$RELATION_NAME='+QuotedStr(ATableName.ToUpper)+';'+
+                 ' UPDATE RDB$RELATION_FIELDS SET RDB$RELATION_NAME='+QuotedStr(ANewTableName.ToUpper)+
+                 '  WHERE RDB$RELATION_NAME='+QuotedStr(ATableName.ToUpper)+' AND RDB$SYSTEM_FLAG=0;';
+
+      end;
+    dbtMSSQLServer :
+      begin
+        LsSQL := 'exec sp_rename '+QuotedStr(ATableName.ToUpper)+ ', '+QuotedStr(ANewTableName.ToUpper);
+      end;
+  end;
+  ExecSQL(LsSQL, ATrans);
 end;
 
 function TChfDBConnection.existTable(const ATableName: String;
