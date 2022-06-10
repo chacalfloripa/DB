@@ -985,7 +985,7 @@ procedure TChfDBConnection.setFieldNotNull(const ATableName: String;
   const AFieldName: String; const ADefValue: Variant; ATrans: TSQLTransaction);
 var
   LsSQL : String = '';
-  LoField : TField = nil;
+  LoField : TFieldDef = nil;
   LoQyery : TSQLQuery;
 begin
   if DBType in [dbtSQLite3, dbtPostgreSQL, dbtMySQL, dbtODBC, dbtOracle, dbtSybase] then
@@ -995,9 +995,9 @@ begin
     dbtMSSQLServer :
       begin
         LsSQL := 'ALTER TABLE '+ATableName.ToUpper+
-                 ' ALTER '+AFieldName.ToUpper + ' ';
+                 ' ALTER COLUMN '+AFieldName.ToUpper + ' ';
         LoField := getFieldFromDB(ATableName, AFieldName, ATrans);
-        LsSQL := LsSQL + getStrSQLFieldType(LoField.DataType, LoField.DataSize, True);
+        LsSQL := LsSQL + getStrSQLFieldType(LoField.DataType, LoField.Size, True);
       end;
   end;
   if not LsSQL.IsEmpty then
