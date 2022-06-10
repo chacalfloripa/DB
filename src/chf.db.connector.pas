@@ -391,7 +391,7 @@ begin
         if DBType = dbtFirebird then
           Result := 'SMALLINT'+IfThen(ARequired, ' NOT NULL', '');
         if DBType = dbtMSSQLServer then
-          Result := 'BIT'+IfThen(ARequired, ' NOT NULL', '');
+          Result := 'TINYINT'+IfThen(ARequired, ' NOT NULL', '');
         if DBType = dbtSQLite3 then
           Result := 'BOOLEAN'+IfThen(ARequired, ' NOT NULL DEFAULT 0 ', '');;
       end;
