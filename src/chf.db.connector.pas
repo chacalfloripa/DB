@@ -460,13 +460,13 @@ begin
         if DBType = dbtFirebird then
           Result := 'VARCHAR('+IntToStr(ASize)+') CHARACTER SET ISO8859_1 '+IfThen(ARequired, 'NOT NULL', '')+' COLLATE PT_BR ';
         if DBType = dbtSQLite3 then
-          Result := ' TEXT ' +  IfThen(ARequired, 'NOT NULL DEFAULT '''' ', '');
+          Result := ' TEXT ' +  IfThen(ARequired, 'NOT NULL DEFAULT '''' ', 'NULL');
         if DBType = dbtMSSQLServer then
         begin
           if ASize <= 8000 then
             Result := 'VARCHAR('+IntToStr(ASize)+')'+IfThen(ARequired, 'NOT NULL', '')
           else
-            Result := 'TEXT '+IfThen(ARequired, 'NOT NULL', '');
+            Result := 'TEXT '+IfThen(ARequired, 'NOT NULL', 'NULL');
         end;
       end;
     ftBlob :
@@ -509,12 +509,11 @@ begin
 end;
 
 function TChfDBConnection.getFieldFromDB(const ATableName: string;
-  const AFieldName: string; ATrans: TSQLTransaction): TField;
+  const AFieldName: string; ATrans: TSQLTransaction): TFieldDef;
 var
-  LoQuery : TSQLQuery;
+  LoQuery : TSQLQuery = nil;
   LsSQL : String = '';
 begin
-  Result := nil;
   if not existTable(ATableName, ATrans) then
      raise Exception.Create('A tabela "'+ATableName.ToUpper+'" não existe.');
   if not existField(ATableName, AFieldName, ATrans) then
@@ -524,8 +523,15 @@ begin
   try
     LoQuery.Open;
     if LoQuery.Fields.Count > 0 then
-      Result := LoQuery.FieldByName(AFieldName);
+    begin
+      Result := TFieldDef.Create(nil,
+                                 LoQuery.FieldByName(AFieldName).FieldName,
+                                 LoQuery.FieldByName(AFieldName).DataType,
+                                 LoQuery.FieldByName(AFieldName).Size,
+                                 LoQuery.FieldByName(AFieldName).Required,
+                                 LoQuery.FieldByName(AFieldName).FieldNo);
 
+    end;
     LoQuery.Close;
   finally
     FreeAndNil(LoQuery);
