@@ -1028,7 +1028,7 @@ procedure TChfDBConnection.setFieldNull(const ATableName: String;
   const AFieldName: String; ATrans: TSQLTransaction);
 var
   LsSQL : String = '';
-  LoField : TField;
+  LoField : TFieldDef = nil;
 begin
   if DBType in [dbtSQLite3, dbtPostgreSQL, dbtMySQL, dbtODBC, dbtOracle, dbtSybase] then
     raise Exception.Create('Função(setFieldNull) não implementada para o banco '+GetEnumName(TypeInfo(TChfDBType), Ord(DBType)));
@@ -1038,9 +1038,13 @@ begin
     dbtMSSQLServer :
       begin
         LsSQL := 'ALTER TABLE '+ATableName.ToUpper+
-                 ' ALTER '+AFieldName.ToUpper + ' ';
-        LoField := getFieldFromDB(ATableName, AFieldName, ATrans);
-        LsSQL := LsSQL + getStrSQLFieldType(LoField.DataType, LoField.DataSize, False);
+                 ' ALTER COLUMN '+AFieldName.ToUpper + ' ';
+        LoField := getFieldFromDB(ATableName.ToUpper, AFieldName.ToUpper, ATrans);
+        try
+          LsSQL := LsSQL + getStrSQLFieldType(LoField.DataType, LoField.Size, False);
+        finally
+          FreeAndNil(LoField);
+        end;
       end;
   end;
 
