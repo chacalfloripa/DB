@@ -171,36 +171,6 @@ type
     property DefPrimaryKeyName : String read FDefPrimaryKeyName write FDefPrimaryKeyName;
     property DefPrimaryKeyFieldType : TFieldType read FDefPrimaryKeyFieldType write FDefPrimaryKeyFieldType;
     property DefPrimaryKeySize : Integer read FDefPrimaryKeySize write FDefPrimaryKeySize;
-(*    //
-
-    procedure ExecScript(const ASQLs : array of string); virtual; abstract;
-    //
-
-    function dropIndex(const AIndexName : String):Boolean;
-    function dropForeignKey(const AForeignKey:String;
-                            const ATable : String):Boolean;
-    //
-    procedure setFieldPrimaryKey(const ATableName: string;
-                                 const AFieldName: string);
-    procedure setDefaultValue(const ATableName: string;
-                              const AFieldName: string;
-                              const AValue : string);
-    //
-
-    function existTrigger(const ATableName: string;
-                          const ATriggerName: string):Boolean;
-    function existForeignKey(const AForeignKeyName: String): Boolean;
-    function existPrimaryKey(const APrimaryKeyName: string): Boolean;
-    //
-
-    //
-    function renameField(const ATable:String;
-                         const AField:String;
-                         const ANewField:String):Boolean;
-    function renametable(const ATable:String;
-                         const ANewTable:String):Boolean;
-    //
-    property UseIDLargeint : Boolean read FUseIDLargeint write FUseIDLargeint *)
   end;
 
 implementation
