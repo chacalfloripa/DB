@@ -9,7 +9,7 @@ uses
   DB, StrUtils, TypInfo;
 
 type
-  TChfDBEventOnLog = procedure(AMensagem : String) of object;
+  TChfDBEventOnLog = procedure(const AMensagem : String) of object;
 
   TChfDBType = (dbtFirebird, dbtMSSQLServer, dbtOracle, dbtPostgreSQL, dbtSQLite3,
                 dbtODBC, dbtSybase, dbtMySQL);
@@ -36,7 +36,7 @@ type
     function getParams: String;
     procedure setParams(AValue: String);
   protected
-    procedure addLog(AMensagem : String); virtual;
+    procedure addLog(const AMensagem : String); virtual;
     function getConnected: Boolean; virtual;
   public
     constructor Create(const ADBType: TChfDBType); virtual;
@@ -1050,7 +1050,7 @@ begin
   until LiCount = FParams.Count;
 end;
 
-procedure TChfDBConnection.addLog(AMensagem: String);
+procedure TChfDBConnection.addLog(const AMensagem: String);
 begin
   if Assigned(FOnLog) then
     FOnLog(AMensagem);
