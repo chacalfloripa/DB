@@ -762,7 +762,10 @@ var
 begin
   if existField(ATableName, AFieldName, ATrans) then
   begin
-    LsSQL := 'alter table '+ ATableName.ToUpper + ' drop ' + AFieldName.ToUpper;
+    case DBType of
+     dbtFirebird : LsSQL := 'alter table '+ ATableName.ToUpper + ' drop ' + AFieldName.ToUpper;
+     dbtMSSQLServer : LsSQL := 'alter table '+ ATableName.ToUpper + ' drop column ' + AFieldName.ToUpper;
+    end;
     ExecSQL(LsSQL, ATrans);
   end;
 end;
