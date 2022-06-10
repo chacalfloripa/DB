@@ -270,12 +270,10 @@ end;
 
 function TChfDBConnection.getTransaction(AOwner: TComponent): TSQLTransaction;
 begin
-  addLog('Inicio TChfDBConnection.getTransaction');
   if not Assigned(AOwner) then
     AOwner := FDBConn;
   Result := TSQLTransaction.Create(AOwner);
   Result.SQLConnection := FDBConn;
-  addLog('Fim do TChfDBConnection.getTransaction');
 end;
 
 function TChfDBConnection.getSequence(const ASequenceName: string): String;
@@ -554,6 +552,7 @@ var
   LoFieldType : TFieldType;
   LiSizeField : Integer;
 begin
+  addLog('Criando a tabela '+ATableName);
   if not existTable(ATableName) then
   begin
     LsFieldName := IfThen(DefPrimaryKeyName.IsEmpty, DefPrimaryKeyName, APrimaryKeyName);
@@ -632,6 +631,7 @@ procedure TChfDBConnection.addSequence(const ASequenceName: string;
 var
   LsSQL : String = '';
 begin
+  addLog('Criando a tabela '+ASequenceName);
   if not existSequence(ASequenceName, ATrans) then
   begin
     case DBType of
