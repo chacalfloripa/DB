@@ -253,9 +253,12 @@ begin
       if not LoQuery.SQLTransaction.Active then
         LoQuery.SQLTransaction.StartTransaction;
       repeat
-        LoQuery.SQL.Clear;
-        LoQuery.SQL.Add(LoScript.Strings[LiCount]);
-        LoQuery.ExecSQL;
+        if not LoScript.Strings[LiCount].Trim.IsEmpty then
+        begin
+          LoQuery.SQL.Clear;
+          LoQuery.SQL.Add(LoScript.Strings[LiCount]);
+          LoQuery.ExecSQL;
+        end;
         Inc(LiCount);
       until LiCount = LoScript.Count;
       LoQuery.SQLTransaction.Commit;
