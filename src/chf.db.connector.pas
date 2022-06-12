@@ -65,7 +65,7 @@ type
                                       ATrans : TSQLTransaction = nil):String;
     function getFieldFromDB(const ATableName: string;
                             const AFieldName: string;
-                            ATrans : TSQLTransaction = nil):TField;
+                            ATrans : TSQLTransaction = nil):TFieldDef;
     //
     procedure addTable(const ATableName: string;
                        ATrans : TSQLTransaction = nil); overload;  virtual;
