@@ -157,6 +157,7 @@ type
     procedure setFieldPrimaryKey(const ATableName : String;
                                  const AFieldName : String;
                                  ATrans : TSQLTransaction = nil); virtual;
+    function getCloneConnector: TChfDBConnection;
     // Propertys
     property DBConn : TSQLConnection read FDBConn;
     property DBType : TChfDBType read FDBType;
@@ -311,7 +312,6 @@ function TChfDBConnection.getQuery(const ASQL: string; ATrans: TSQLTransaction
   ): TSQLQuery;
 begin
   Result := TSQLQuery.Create(nil);
-
   Result.SQLTransaction := ATrans;
   if not Assigned(ATrans) then
     Result.SQLTransaction := getTransaction(Result);
@@ -1079,6 +1079,13 @@ begin
   end
   else
     raise Exception.Create('Error: CONN-0012'+#13+'Função não existe para o DB');
+end;
+
+function TChfDBConnection.getCloneConnector: TChfDBConnection;
+begin
+  Result := TChfDBConnection.Create(Self.DBType);
+  Result.Params := Self.Params;
+  Result.Connect;
 end;
 
 function TChfDBConnection.getParams: String;
