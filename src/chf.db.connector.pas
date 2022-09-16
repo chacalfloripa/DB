@@ -282,7 +282,8 @@ begin
         raise Exception.Create('Error: CONN-0004'+#13+e.Message);
     end;
   finally
-     FreeAndNil(LoQuery);
+    FreeAndNil(LoScript);
+    FreeAndNil(LoQuery);
   end;
 end;
 
