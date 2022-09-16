@@ -6,13 +6,13 @@ interface
 
 uses
   Classes, SysUtils, SQLDB, IBConnection, MSSQLConn, PQConnection, SQLite3Conn,
-  DB, StrUtils, TypInfo;
+  DB, StrUtils, TypInfo, mysql51conn, mysql55conn, mysql80conn, SQLDBLib;
 
 type
-  TChfDBEventOnLog = procedure(const AMensagem : String) of object;
+  TChfDBEventOnLog = procedure(AMensagem : String) of object;
 
   TChfDBType = (dbtFirebird, dbtMSSQLServer, dbtOracle, dbtPostgreSQL, dbtSQLite3,
-                dbtODBC, dbtSybase, dbtMySQL);
+                dbtODBC, dbtSybase, dbtMySQL51, dbtMySQL55, dbtMySQL80);
 
   { TChfDBConnection }
 
@@ -22,10 +22,12 @@ type
     FCharset: String;
     FDatabaseName: String;
     FDBConn : TSQLConnection;
+    FDBLib : TSQLDBLibraryLoader;
     FDefPrimaryKeyFieldType: TFieldType;
     FDefPrimaryKeyName: String;
     FDefPrimaryKeySize: Integer;
     FDefTrans : TSQLTransaction;
+    FLibraryName: String;
     FHostName: String;
     FOnLog: TChfDBEventOnLog;
     FParams: TStringList;
@@ -204,12 +206,24 @@ end;
 function TChfDBConnection.Connect: Boolean;
 begin
   addLog('Inicio TChfDBConnection.Connect');
+  //
+  if not FLibraryName.IsEmpty then
+  begin
+    FDBLib := TSQLDBLibraryLoader.Create(nil);
+    FDBLib.LibraryName := FLibraryName;
+    FDBLib.Enabled := True;
+  end;
+  //
   case FDBType of
        dbtFirebird : FDBConn := TIBConnection.Create(nil);
     dbtMSSQLServer : FDBConn := TMSSQLConnection.Create(nil);
      dbtPostgreSQL : FDBConn := TPQConnection.Create(nil);
         dbtSQLite3 : FDBConn := TSQLite3Connection.Create(nil);
+        dbtMySQL51 : FDBConn := TMySQL51Connection.Create(nil);
+        dbtMySQL55 : FDBConn := TMySQL55Connection.Create(nil);
+        dbtMySQL80 : FDBConn := TMySQL80Connection.Create(nil);
   end;
+  //
   if Assigned(FDBConn) then
   begin
     if not Assigned(FDefTrans) then
@@ -487,7 +501,7 @@ var
   LoQuery : TSQLQuery;
   LsSQL : String = '';
 begin
-  if DBType in [dbtSQLite3, dbtPostgreSQL, dbtMySQL, dbtODBC, dbtOracle, dbtSybase] then
+  if DBType in [dbtSQLite3, dbtPostgreSQL, dbtMySQL51, dbtMySQL55, dbtMySQL80, dbtODBC, dbtOracle, dbtSybase] then
     raise Exception.Create('Função(getStrSQLFieldTypeFromDB) não implementada para o banco '+GetEnumName(TypeInfo(TChfDBType), Ord(DBType)));
   if not existTable(ATableName, ATrans) then
      raise Exception.Create('A tabela "'+ATableName.ToUpper+'" não existe.');
@@ -676,7 +690,7 @@ procedure TChfDBConnection.addForeignKey(const AForeignKeyName: String;
 var
   LsSQL : String = '';
 begin
-  if DBType in [dbtSQLite3, dbtPostgreSQL, dbtMySQL, dbtODBC, dbtOracle, dbtSybase] then
+  if DBType in [dbtSQLite3, dbtPostgreSQL, dbtMySQL51, dbtMySQL55, dbtMySQL80, dbtODBC, dbtOracle, dbtSybase] then
     raise Exception.Create('Função(addForeignKey) não implementada para o banco '+GetEnumName(TypeInfo(TChfDBType), Ord(DBType)));
   if not existTable(ATableName, ATrans) then
     raise Exception.Create('Tabela "'+ATableName+'" não existe.');
@@ -717,7 +731,7 @@ procedure TChfDBConnection.addFieldUnique(const AUniqueName: String;
   const ASize: Integer; const ARequired: Boolean; ATrans: TSQLTransaction
   );
 begin
-  if DBType in [dbtSQLite3, dbtPostgreSQL, dbtMySQL, dbtODBC, dbtOracle, dbtSybase] then
+  if DBType in [dbtSQLite3, dbtPostgreSQL, dbtMySQL51, dbtMySQL55, dbtMySQL80, dbtODBC, dbtOracle, dbtSybase] then
     raise Exception.Create('Função(addFieldUnique) não implementada para o banco '+GetEnumName(TypeInfo(TChfDBType), Ord(DBType)));
   addField(ATableName, AFieldName, ADataType, ASize, ARequired, ATrans);
   addUnique(AUniqueName, ATableName, AFieldName, ATrans);
@@ -728,7 +742,7 @@ procedure TChfDBConnection.addUnique(const AUniqueName: String;
 var
   LsSQL : String;
 begin
-  if DBType in [dbtSQLite3, dbtPostgreSQL, dbtMySQL, dbtODBC, dbtOracle, dbtSybase] then
+  if DBType in [dbtSQLite3, dbtPostgreSQL, dbtMySQL51, dbtMySQL55, dbtMySQL80, dbtODBC, dbtOracle, dbtSybase] then
     raise Exception.Create('Função(addUnique) não implementada para o banco '+GetEnumName(TypeInfo(TChfDBType), Ord(DBType)));
 
   case DBType of
@@ -988,7 +1002,7 @@ var
   LoField : TFieldDef = nil;
   LoQyery : TSQLQuery;
 begin
-  if DBType in [dbtSQLite3, dbtPostgreSQL, dbtMySQL, dbtODBC, dbtOracle, dbtSybase] then
+  if DBType in [dbtSQLite3, dbtPostgreSQL, dbtMySQL51, dbtMySQL55, dbtMySQL80, dbtODBC, dbtOracle, dbtSybase] then
     raise Exception.Create('Função(setFieldNotNull) não implementada para o banco '+GetEnumName(TypeInfo(TChfDBType), Ord(DBType)));
   case DBType of
        dbtFirebird : LsSQL := 'ALTER TABLE '+ATableName.ToUpper+' ALTER '+AFieldName.ToUpper+' SET NOT NULL';
@@ -1030,7 +1044,7 @@ var
   LsSQL : String = '';
   LoField : TFieldDef = nil;
 begin
-  if DBType in [dbtSQLite3, dbtPostgreSQL, dbtMySQL, dbtODBC, dbtOracle, dbtSybase] then
+  if DBType in [dbtSQLite3, dbtPostgreSQL, dbtMySQL51, dbtMySQL55, dbtMySQL80, dbtODBC, dbtOracle, dbtSybase] then
     raise Exception.Create('Função(setFieldNull) não implementada para o banco '+GetEnumName(TypeInfo(TChfDBType), Ord(DBType)));
 
   case DBType of
@@ -1061,7 +1075,7 @@ procedure TChfDBConnection.setFieldPrimaryKey(const ATableName: String;
 var
   LsSQL : String = '';
 begin
-  if DBType in [dbtSQLite3, dbtPostgreSQL, dbtMySQL, dbtODBC, dbtOracle, dbtSybase] then
+  if DBType in [dbtSQLite3, dbtPostgreSQL, dbtMySQL51, dbtMySQL55, dbtMySQL80, dbtODBC, dbtOracle, dbtSybase] then
     raise Exception.Create('Função(setFieldPK) não implementada para o banco '+GetEnumName(TypeInfo(TChfDBType), Ord(DBType)));
 
   case DBType of
@@ -1117,6 +1131,9 @@ begin
     else
     if FParams.Strings[LiCount].StartsWith('Charset=') then
       FCharset := Trim(FParams.Strings[LiCount].Substring(FParams.Strings[LiCount].IndexOf('=')+1))
+    else
+    if FParams.Strings[LiCount].StartsWith('LibraryName=') then
+      FLibraryName := Trim(FParams.Strings[LiCount].Substring(FParams.Strings[LiCount].IndexOf('=')+1))
     else
       FParamsEx.Add(Trim(FParams.Strings[LiCount].ToLower));
 

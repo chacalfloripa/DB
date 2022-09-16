@@ -6,9 +6,9 @@ interface
 
 uses
   Classes, SysUtils, Forms, Controls, Graphics, Dialogs, ComCtrls, ExtCtrls,
-  SynHighlighterJScript, chf.demobase.gui.main, SQLDB, mysql80conn, DB,
-  oracleconnection, SQLite3Conn, PQConnection, MSSQLConn, IBConnection,
-  StdCtrls, DBCtrls, SynEdit, DBGrids, chf.db.connector;
+  SynHighlighterJScript, chf.demobase.gui.main, SQLDB, SQLDBLib, mysql80conn,
+  mysql55conn, DB, oracleconnection, SQLite3Conn, PQConnection, MSSQLConn,
+  IBConnection, StdCtrls, DBCtrls, SynEdit, DBGrids, chf.db.connector;
 
 type
 
@@ -96,6 +96,9 @@ type
     lblTesteDataHora: TLabel;
     lblTesteHora: TLabel;
     memConfigMSSQL: TSynEdit;
+    memConfigMySQL51: TSynEdit;
+    memConfigMySQL55: TSynEdit;
+    memConfigMySQL80: TSynEdit;
     memConfigPostgreSQL: TSynEdit;
     memConfigSQLite3: TSynEdit;
     memConsultaSQL: TMemo;
@@ -117,9 +120,12 @@ type
     tabEstruturaSequence: TTabSheet;
     tabEstruturaCampos: TTabSheet;
     tabForeignKey: TTabSheet;
+    TabSheet1: TTabSheet;
+    TabSheet2: TTabSheet;
     TabSheet3: TTabSheet;
     TabSheet4: TTabSheet;
     TabSheet5: TTabSheet;
+    TabSheet6: TTabSheet;
     procedure Button10Click(Sender: TObject);
     procedure Button11Click(Sender: TObject);
     procedure Button12Click(Sender: TObject);
@@ -148,7 +154,6 @@ type
      FDtsQuery : TSQLQuery;
      FDtsTable : TSQLQuery;
   public
-
   end;
 
 var
@@ -188,6 +193,24 @@ begin
           FDBConnection := TChfDBConnection.Create(dbtSQLite3);
           FDBConnection.OnLog := @WriteLog;
           FDBConnection.Params := memConfigSQLite3.Text;
+        end;
+      'MySQL51' :
+        begin
+          FDBConnection := TChfDBConnection.Create(dbtMySQL51);
+          FDBConnection.OnLog := @WriteLog;
+          FDBConnection.Params := memConfigMySQL51.Text;
+        end;
+      'MySQL55' :
+        begin
+          FDBConnection := TChfDBConnection.Create(dbtMySQL55);
+          FDBConnection.OnLog := @WriteLog;
+          FDBConnection.Params := memConfigMySQL55.Text;
+        end;
+      'MySQL80' :
+        begin
+          FDBConnection := TChfDBConnection.Create(dbtMySQL80);
+          FDBConnection.OnLog := @WriteLog;
+          FDBConnection.Params := memConfigMySQL80.Text;
         end;
     end;
     FDBConnection.Connect;
