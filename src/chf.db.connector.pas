@@ -369,7 +369,7 @@ var
   LoQuery : TSQLQuery;
 begin
   case FDBType of
-    dbtFirebird : LsSQL := 'select first 1 current_timestamp as datetime from RDB$DATABASE';
+    dbtFirebird : LsSQL := 'select first 1 LOCALTIMESTAMP as datetime from RDB$DATABASE';
     dbtMSSQLServer : LsSQL := 'select GETDATE()  as datetime';
     dbtSQLite3 : LsSQL := 'select DATETIME() as datetime';
     dbtPostgreSQL : LsSQL := 'select CURRENT_TIMESTAMP as datetime';
