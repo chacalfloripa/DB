@@ -303,6 +303,7 @@ begin
   case DBType of
     dbtFirebird : LsSQL := 'select gen_id('+ASequenceName.ToUpper+', 1) as seq from RDB$DATABASE';
     dbtMSSQLServer : LsSQL := 'SELECT NEXT VALUE FOR dbo.'+ASequenceName.ToUpper+' as seq;';
+    dbtPostgreSQL : LsSQL := 'SELECT nextval('+QuotedStr(ASequenceName.ToLower)+') as seq;';
   end;
 
   LoQuery := getQuery(LsSQL, nil);
