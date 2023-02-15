@@ -5,8 +5,8 @@ unit chf.db.connector;
 interface
 
 uses
-  Classes, SysUtils, SQLDB, IBConnection, MSSQLConn, PQConnection, SQLite3Conn,
-  DB, StrUtils, TypInfo, mysql51conn, mysql55conn, mysql80conn, SQLDBLib;
+  Classes, SysUtils, DB, StrUtils, TypInfo, SQLDB, IBConnection, mysql80conn,
+  MSSQLConn, PQConnection, SQLite3Conn, mysql51conn, mysql55conn, SQLDBLib;
 
 type
   TChfDBEventOnLog = procedure(AMensagem : String) of object;
@@ -276,7 +276,8 @@ begin
         end;
         Inc(LiCount);
       until LiCount = LoScript.Count;
-      LoQuery.SQLTransaction.Commit;
+      if not Assigned(ATrans) then
+        LoQuery.SQLTransaction.Commit;
     except
       on E: Exception do
         raise Exception.Create('Error: CONN-0004'+#13+e.Message);
@@ -303,7 +304,7 @@ begin
   case DBType of
     dbtFirebird : LsSQL := 'select gen_id('+ASequenceName.ToUpper+', 1) as seq from RDB$DATABASE';
     dbtMSSQLServer : LsSQL := 'SELECT NEXT VALUE FOR dbo.'+ASequenceName.ToUpper+' as seq;';
-    dbtPostgreSQL : LsSQL := 'SELECT nextval('+QuotedStr(ASequenceName.ToLower)+') as seq;';
+    dbtPostgreSQL : LsSQL := 'SELECT nextval('+QuotedStr('"'+ASequenceName.ToLower+'"')+') as seq;';
   end;
 
   LoQuery := getQuery(LsSQL, nil);
@@ -438,7 +439,7 @@ begin
       end;
     ftDate :
       begin
-        if DBType in [dbtFirebird, dbtMSSQLServer] then
+        if DBType in [dbtFirebird, dbtMSSQLServer, dbtPostgreSQL] then
           Result := 'DATE'+IfThen(ARequired, ' NOT NULL', '');;
       end;
     ftDateTime :
@@ -449,24 +450,26 @@ begin
           Result := 'DATETIME';
         if DBType = dbtSQLite3 then
           Result := 'DATETIME';
+        if DBType = dbtPostgreSQL then
+          Result := 'TIMESTAMP';
       end;
     ftInteger :
       begin
-        if DBType in [dbtFirebird, dbtMSSQLServer] then
+        if DBType in [dbtFirebird, dbtMSSQLServer, dbtPostgreSQL] then
           Result := 'INT'+IfThen(ARequired, ' NOT NULL', '');
         if DBType = dbtSQLite3 then
           Result := 'INTEGER'+IfThen(ARequired, ' NOT NULL DEFAULT 0 ', '');
       end;
     ftSmallint :
       begin
-        if DBType in [dbtFirebird, dbtMSSQLServer] then
+        if DBType in [dbtFirebird, dbtMSSQLServer, dbtPostgreSQL] then
           Result := 'smallint'+IfThen(ARequired, ' NOT NULL', '');
         if DBType = dbtSQLite3 then
           raise Exception.Create('Tipo ftSmallint não implementado para SQLite.');
       end;
     ftLargeint :
       begin
-        if DBType in [dbtFirebird, dbtMSSQLServer] then
+        if DBType in [dbtFirebird, dbtMSSQLServer, dbtPostgreSQL] then
           Result := 'BIGINT'+IfThen(ARequired, ' NOT NULL', '');
         if DBType = dbtSQLite3 then
           raise Exception.Create('Tipo ftSmallint não implementado para SQLite.');
@@ -475,6 +478,8 @@ begin
       begin
         if DBType = dbtFirebird then
           Result := 'VARCHAR('+IntToStr(ASize)+') CHARACTER SET ISO8859_1 '+IfThen(ARequired, 'NOT NULL', '')+' COLLATE PT_BR ';
+        if DBType = dbtPostgreSQL then
+          Result := 'VARCHAR('+IntToStr(ASize)+')'+IfThen(ARequired, 'NOT NULL', '');
         if DBType = dbtSQLite3 then
           Result := ' TEXT ' +  IfThen(ARequired, 'NOT NULL DEFAULT '''' ', 'NULL');
         if DBType = dbtMSSQLServer then
@@ -614,14 +619,15 @@ begin
     ExecSQL(LsSQL, ATrans);
     //
     // Firebird, MSSQL
-    if DBType in [dbtFirebird, dbtMSSQLServer] then
+    if DBType in [dbtFirebird, dbtMSSQLServer, dbtPostgreSQL] then
     begin
       if ACreatePrimaryKey then
       begin
-        LsSQL := ' ALTER TABLE '+ UpperCase(ATableName);
-        LsSQL := LsSQL + ' ADD CONSTRAINT PK_'+UpperCase( ATableName )+LsFieldName;
-        LsSQL := LsSQL + ' PRIMARY KEY ( '+LsFieldName+' ) ';
-        ExecSQL(LsSQL, ATrans);
+        setFieldPrimaryKey(ATableName, LsFieldName, ATrans);
+        //LsSQL := ' ALTER TABLE '+ UpperCase(ATableName);
+        //LsSQL := LsSQL + ' ADD CONSTRAINT PK_'+UpperCase( ATableName )+LsFieldName;
+        //LsSQL := LsSQL + ' PRIMARY KEY ( '+LsFieldName+' ) ';
+        //ExecSQL(LsSQL, ATrans);
       end;
     end;
   end;
@@ -662,6 +668,8 @@ begin
     case DBType of
          dbtFirebird : LsSQL := 'CREATE GENERATOR '+ASequenceName.ToUpper+'; '+
                                 'SET GENERATOR '+ASequenceName.ToUpper+' TO '+ANumStart.ToString;
+       dbtPostgreSQL : LsSQL := 'CREATE SEQUENCE "'+ASequenceName.ToLower+'" INCREMENT '+ANumInc.ToString()+' START '+ANumStart.ToString()+' MINVALUE 0;'+
+                                 'ALTER SEQUENCE "'+ASequenceName.ToLower+'" OWNER TO postgres;';
       dbtMSSQLServer :
         begin
           LsSQL := 'CREATE SEQUENCE '+ASequenceName.ToUpper+
@@ -692,7 +700,7 @@ procedure TChfDBConnection.addForeignKey(const AForeignKeyName: String;
 var
   LsSQL : String = '';
 begin
-  if DBType in [dbtSQLite3, dbtPostgreSQL, dbtMySQL51, dbtMySQL55, dbtMySQL80, dbtODBC, dbtOracle, dbtSybase] then
+  if DBType in [dbtSQLite3, dbtMySQL51, dbtMySQL55, dbtMySQL80, dbtODBC, dbtOracle, dbtSybase] then
     raise Exception.Create('Função(addForeignKey) não implementada para o banco '+GetEnumName(TypeInfo(TChfDBType), Ord(DBType)));
   if not existTable(ATableName, ATrans) then
     raise Exception.Create('Tabela "'+ATableName+'" não existe.');
@@ -716,13 +724,18 @@ begin
                       'REFERENCES '+ATableNameRef.ToUpper+'('+AFieldNameRef.ToUpper+')';
 
            end;
+       dbtPostgreSQL : LsSQL := 'ALTER TABLE '+ATableName.ToUpper+' '+
+                                'ADD CONSTRAINT '+AForeignKeyName.ToUpper+' '+
+                                'FOREIGN KEY ('+AFieldName.ToUpper+') '+
+                                'REFERENCES '+ATableNameRef.ToUpper+'('+AFieldNameRef.ToUpper+')';
+                                //
       dbtMSSQLServer : LsSQL := 'ALTER TABLE dbo.'+ATableName.ToUpper+' '+
                                 'ADD CONSTRAINT '+AForeignKeyName.ToUpper+' '+
                                 'FOREIGN KEY ('+AFieldName.ToUpper+') '+
                                 'REFERENCES  dbo.'+ATableNameRef.ToUpper+'('+AFieldNameRef.ToUpper+')';
     end;
     if not LsSQL.IsEmpty then
-      ExecSQL(LsSQL)
+      ExecSQL(LsSQL, ATrans)
     else
       raise Exception.Create('Error: CONN-0008'+#13+'Função não existe para o DB');
   end;
@@ -758,7 +771,7 @@ begin
   end;
   if existField(ATableName, AFieldName) then
   begin
-    ExecSQL(LsSQL);
+    ExecSQL(LsSQL, ATrans);
   end;
 end;
 
@@ -862,22 +875,29 @@ var
 begin
   Result := False;
   case DBType of
-    dbtFirebird : LsSQL := 'select RDB$RELATION_NAME '+
-                           '  from RDB$RELATIONS '+
-                           '  where RDB$RELATION_NAME = '+QuotedStr(ATableName.ToUpper);
+       dbtFirebird : LsSQL := 'select RDB$RELATION_NAME '+
+                              '  from RDB$RELATIONS '+
+                              '  where RDB$RELATION_NAME = '+QuotedStr(ATableName.ToUpper);
     dbtMSSQLServer : LsSQL := 'SELECT * FROM information_schema.tables '+
                               ' where TABLE_CATALOG  = '+QuotedStr(DatabaseName.ToUpper)+
                               '   and TABLE_SCHEMA = '+QuotedStr('dbo')+
                               '   and TABLE_NAME = '+QuotedStr(ATableName.ToUpper);
-    dbtSQLite3 : LsSQL := '';
-    dbtPostgreSQL : LsSQL := '';
+       dbtSQLite3 : LsSQL := '';
+    dbtPostgreSQL : LsSQL := 'select * from pg_class where relname = '+QuotedStr(LowerCase(ATableName));
   end;
   LoQuery := getQuery(LsSQL, ATrans);
   try
-    LoQuery.Open;
-    if not LoQuery.IsEmpty then
-      Result := True;
-    LoQuery.Close;
+    try
+      LoQuery.Open;
+      if not LoQuery.IsEmpty then
+        Result := True;
+      LoQuery.Close;
+    except
+      on e:  Exception do
+      begin
+        raise Exception.Create(e.Message);
+      end;
+    end;
   finally
     FreeAndNil(LoQuery);
   end;
@@ -903,7 +923,9 @@ begin
                                 '   and TABLE_NAME = '+QuotedStr(ATableName.ToUpper)+
                                 '   and COLUMN_NAME = '+QuotedStr(AFieldName.ToUpper);
       dbtSQLite3 : LsSQL := '';
-      dbtPostgreSQL : LsSQL := '';
+      dbtPostgreSQL : LsSQL := 'select column_name from information_schema.columns ' +
+                               ' where table_name = '+QuotedStr(ATableName.ToLower)+
+                               '   and column_name = '+QuotedStr(AFieldName.ToLower);
     end;
     LoQuery := getQuery(LsSQL, ATrans);
     try
@@ -934,6 +956,7 @@ begin
     dbtMSSQLServer : LsSQL := 'SELECT name '+
                               '  FROM sys.foreign_keys '+
                               ' where name = '+QuotedStr(AForeignKeyName.ToUpper);
+     dbtPostgreSQL : LsSQL := 'select * from information_schema.referential_constraints where constraint_name = '+AForeignKeyName.ToLower.QuotedString;
   end;
   if not LsSQL.IsEmpty then
   begin
@@ -977,6 +1000,7 @@ begin
        dbtFirebird : LsSQL := 'select a.RDB$GENERATOR_NAME '+
                               ' from RDB$GENERATORS a '+
                               'where a.RDB$GENERATOR_NAME = '+QuotedStr(ASequenceName.ToUpper);
+     dbtPostgreSQL : LsSQL := 'select oid from pg_class where relname = '+QuotedStr(ASequenceName.ToLower);
     dbtMSSQLServer : LsSQL := 'select object_id '+
                               '  from sys.sequences '+
                               ' where object_id = object_id('+QuotedStr('dbo.'+ASequenceName.ToUpper)+')';
@@ -1077,7 +1101,7 @@ procedure TChfDBConnection.setFieldPrimaryKey(const ATableName: String;
 var
   LsSQL : String = '';
 begin
-  if DBType in [dbtSQLite3, dbtPostgreSQL, dbtMySQL51, dbtMySQL55, dbtMySQL80, dbtODBC, dbtOracle, dbtSybase] then
+  if DBType in [dbtSQLite3, dbtMySQL51, dbtMySQL55, dbtMySQL80, dbtODBC, dbtOracle, dbtSybase] then
     raise Exception.Create('Função(setFieldPK) não implementada para o banco '+GetEnumName(TypeInfo(TChfDBType), Ord(DBType)));
 
   case DBType of
@@ -1085,6 +1109,9 @@ begin
                               ' ADD CONSTRAINT PK_'+ATableName.ToUpper+'_ID'+
                               ' PRIMARY KEY ( '+AFieldName.ToUpper+' ) ';
     dbtMSSQLServer : LsSQL := 'ALTER TABLE '+ ATableName.ToUpper+
+                              ' ADD CONSTRAINT PK_'+ATableName.ToUpper+'_ID'+
+                              ' PRIMARY KEY ( '+AFieldName.ToUpper+' ) ';
+     dbtPostgreSQL : LsSQL := 'ALTER TABLE '+ ATableName.ToUpper+
                               ' ADD CONSTRAINT PK_'+ATableName.ToUpper+'_ID'+
                               ' PRIMARY KEY ( '+AFieldName.ToUpper+' ) ';
   end;
