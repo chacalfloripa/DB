@@ -407,6 +407,8 @@ begin
       begin
         if DBType = dbtFirebird then
           Result := 'SMALLINT'+IfThen(ARequired, ' NOT NULL', '');
+        if DBType = dbtPostgreSQL then
+          Result := 'boolean'+IfThen(ARequired, ' NOT NULL', '');
         if DBType = dbtMSSQLServer then
           Result := 'TINYINT'+IfThen(ARequired, ' NOT NULL', '');
         if DBType = dbtSQLite3 then
@@ -414,18 +416,14 @@ begin
       end;
     ftCurrency :
       begin
-        if DBType = dbtFirebird then
-          Result := 'NUMERIC(12,2)'+IfThen(ARequired, ' NOT NULL', '');
-        if DBType = dbtMSSQLServer then
+        if DBType in [dbtFirebird, dbtPostgreSQL, dbtMSSQLServer] then
           Result := 'NUMERIC(12,2)'+IfThen(ARequired, ' NOT NULL', '');
         if DBType = dbtSQLite3 then
           Result := 'NUMERIC'+IfThen(ARequired, ' NOT NULL  DEFAULT 0 ', '');
       end;
     ftFloat :
       begin
-        if DBType = dbtFirebird then
-          Result := 'NUMERIC(12,2)'+IfThen(ARequired, ' NOT NULL', '');
-        if DBType = dbtMSSQLServer then
+        if DBType in [dbtFirebird, dbtPostgreSQL, dbtMSSQLServer] then
           Result := 'NUMERIC(12,2)'+IfThen(ARequired, ' NOT NULL', '');
         if DBType = dbtSQLite3 then
           Result := 'NUMERIC'+IfThen(ARequired, ' NOT NULL  DEFAULT 0 ', '');
