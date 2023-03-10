@@ -163,6 +163,7 @@ type
     // Propertys
     property DBConn : TSQLConnection read FDBConn;
     property DBType : TChfDBType read FDBType;
+    property DefTrans : TSQLTransaction read FDefTrans write FDefTrans;
     property Params : String read getParams write setParams;
     property OnLog : TChfDBEventOnLog read FOnLog write FOnLog;
     property Connected : Boolean read getConnected;
