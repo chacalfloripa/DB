@@ -882,7 +882,7 @@ begin
                               '   and TABLE_SCHEMA = '+QuotedStr('dbo')+
                               '   and TABLE_NAME = '+QuotedStr(ATableName.ToUpper);
        dbtSQLite3 : LsSQL := '';
-    dbtPostgreSQL : LsSQL := 'select * from pg_class where relname = '+QuotedStr(LowerCase(ATableName));
+    dbtPostgreSQL : LsSQL := 'select relname from pg_class where relname = '+QuotedStr(LowerCase(ATableName));
   end;
   LoQuery := getQuery(LsSQL, ATrans);
   try
