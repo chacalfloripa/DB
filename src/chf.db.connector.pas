@@ -331,8 +331,8 @@ function TChfDBConnection.getQuery(const ASQL: string; ATrans: TSQLTransaction
 begin
   Result := TSQLQuery.Create(nil);
   Result.SQLTransaction := FDefTrans;
-  if not Assigned(ATrans) then
-    Result.SQLTransaction := getTransaction(Result);
+  if Assigned(ATrans) then
+    Result.SQLTransaction := ATrans;
 
   Result.DataBase := FDBConn;
   Result.ReadOnly := False;
