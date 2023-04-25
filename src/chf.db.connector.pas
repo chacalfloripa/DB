@@ -380,6 +380,7 @@ begin
     AOwner := FDBConn;
   Result := TSQLTransaction.Create(AOwner);
   Result.SQLConnection := FDBConn;
+  Result.Options := [];
 end;
 
 function TChfDBConnection.getSequence(const ASequenceName: string): String;
