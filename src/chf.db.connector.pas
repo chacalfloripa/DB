@@ -14,11 +14,28 @@ type
   TChfDBType = (dbtFirebird, dbtMSSQLServer, dbtOracle, dbtPostgreSQL, dbtSQLite3,
                 dbtODBC, dbtSybase, dbtMySQL51, dbtMySQL55, dbtMySQL80);
 
+
+  TChfDBConnection = class;
+
+  { TMonitorDBConnection }
+
+  TMonitorDBConnection = class(TThread)
+  private
+    FDBConnection: TChfDBConnection;
+    FUltTesteConexao : TDateTime;
+  public
+    constructor Create(CreateSuspended: Boolean); overload;
+    property DBConnection : TChfDBConnection read FDBConnection write FDBConnection;
+    property UltTesteConexao : TDateTime read FUltTesteConexao write FUltTesteConexao;
+  protected
+    procedure execute; override;
+  end;
+
   { TChfDBConnection }
 
   TChfDBConnection = class
-
   private
+    FMonitor : TMonitorDBConnection;
     FCharset: String;
     FDatabaseName: String;
     FDBConn : TSQLConnection;
@@ -48,6 +65,7 @@ type
     procedure ExecSQL(const ASQL : string;
                       ATrans : TSQLTransaction = nil); virtual;
     //
+    function testConnection : Boolean;
     function getTransaction(AOwner: TComponent) : TSQLTransaction;
     function getSequence(const ASequenceName:string) : String; virtual;
     function getQuery(const ASQL : string;
@@ -182,6 +200,37 @@ implementation
 uses
   DateUtils;
 
+{ TMonitorDBConnection }
+
+constructor TMonitorDBConnection.Create(CreateSuspended: Boolean);
+begin
+  inherited Create(CreateSuspended);
+  FDBConnection := nil;
+  FreeOnTerminate := True;
+end;
+
+procedure TMonitorDBConnection.execute;
+begin
+  while not Terminated do
+  begin
+    if Assigned(DBConnection) then
+    begin
+      try
+        if not DBConnection.Connected then
+          DBConnection.Connect;
+
+        if SecondsBetween(now, FUltTesteConexao) > 10 then
+        begin
+          if not DBConnection.testConnection then
+            DBConnection.Disconnect;
+        end;
+      except
+      end;
+    end;
+    Sleep(1000);
+  end;
+end;
+
 { TChfDBConnection }
 
 constructor TChfDBConnection.Create(const ADBType: TChfDBType);
@@ -193,10 +242,15 @@ begin
   DefPrimaryKeyName := 'ID';
   DefPrimaryKeyFieldType := ftInteger;
   DefPrimaryKeySize := 0;
+  FDBConn := nil;
+  FDefTrans := nil;
+  FMonitor := TMonitorDBConnection.Create(False);
+  FMonitor.DBConnection := Self;
 end;
 
 destructor TChfDBConnection.Destroy;
 begin
+  FMonitor.Terminate;
   FreeAndNil(FParams);
   FreeAndNil(FParamsEx);
   FreeAndNil(FDefTrans);
@@ -207,51 +261,72 @@ end;
 function TChfDBConnection.Connect: Boolean;
 begin
   addLog('Inicio TChfDBConnection.Connect');
+  Result := False;
   //
-  if not FLibraryName.IsEmpty then
-  begin
-    FDBLib := TSQLDBLibraryLoader.Create(nil);
-    FDBLib.LibraryName := FLibraryName;
-    FDBLib.Enabled := True;
-  end;
-  //
-  case FDBType of
-       dbtFirebird : FDBConn := TIBConnection.Create(nil);
-    dbtMSSQLServer : FDBConn := TMSSQLConnection.Create(nil);
-     dbtPostgreSQL : FDBConn := TPQConnection.Create(nil);
-        dbtSQLite3 : FDBConn := TSQLite3Connection.Create(nil);
-        dbtMySQL51 : FDBConn := TMySQL51Connection.Create(nil);
-        dbtMySQL55 : FDBConn := TMySQL55Connection.Create(nil);
-        dbtMySQL80 : FDBConn := TMySQL80Connection.Create(nil);
-  end;
-  //
-  if Assigned(FDBConn) then
-  begin
-    if not Assigned(FDefTrans) then
-      FDefTrans := getTransaction(FDBConn);
-
-    FDBConn.Connected:= False;
-    FDBConn.Transaction := FDefTrans;
-    FDBConn.KeepConnection:= True;
-    FDBConn.HostName := HostName;
-    FDBConn.DatabaseName := DatabaseName;
-    FDBConn.UserName := UserName;
-    FDBConn.Password := Password;
-    FDBConn.CharSet := Charset;
-    FDBConn.Params.Text := FParamsEx.Text;
+  try
+    if not FLibraryName.IsEmpty then
+    begin
+      FDBLib := TSQLDBLibraryLoader.Create(nil);
+      FDBLib.LibraryName := FLibraryName;
+      FDBLib.Enabled := True;
+    end;
     //
-    FDBConn.Connected := True;
-    Result := FDBConn.Connected;
-  end
-  else
-    raise Exception.Create('TChfDBConnector.Error:0001');
+    if not Assigned(FDBConn) then
+    begin
+      case FDBType of
+           dbtFirebird : FDBConn := TIBConnection.Create(nil);
+        dbtMSSQLServer : FDBConn := TMSSQLConnection.Create(nil);
+         dbtPostgreSQL : FDBConn := TPQConnection.Create(nil);
+            dbtSQLite3 : FDBConn := TSQLite3Connection.Create(nil);
+            dbtMySQL51 : FDBConn := TMySQL51Connection.Create(nil);
+            dbtMySQL55 : FDBConn := TMySQL55Connection.Create(nil);
+            dbtMySQL80 : FDBConn := TMySQL80Connection.Create(nil);
+      end;
+    end;
+    //
+    if Assigned(FDBConn) then
+    begin
+      if not Assigned(FDefTrans) then
+        FDefTrans := getTransaction(FDBConn);
+
+      FDBConn.Connected:= False;
+      FDBConn.Transaction := FDefTrans;
+      FDBConn.KeepConnection:= True;
+      FDBConn.HostName := HostName;
+      FDBConn.DatabaseName := DatabaseName;
+      FDBConn.UserName := UserName;
+      FDBConn.Password := Password;
+      FDBConn.CharSet := Charset;
+      FDBConn.Params.Text := FParamsEx.Text;
+      //
+      FDBConn.Connected := True;
+      Result := FDBConn.Connected;
+    end
+    else
+      raise Exception.Create('TChfDBConnector.Error:0001');
+  except
+    FreeAndNil(FDefTrans);
+    FreeAndNil(FDBConn);
+  end;
   addLog('Depois de conectar TChfDBConnection.Connect');
 end;
 
 function TChfDBConnection.Disconnect: Boolean;
 begin
-  if Assigned(FDBConn) then
-    FDBConn.Connected := False;
+  Result := False;
+  try
+    if Assigned(FDBConn) then
+    begin
+      try
+        FDBConn.Connected := False;
+      except
+        FreeAndNil(FDBConn);
+      end;
+      Result :=  True;
+    end;
+    FMonitor.UltTesteConexao := 0;
+  except
+  end;
 end;
 
 procedure TChfDBConnection.ExecSQL(const ASQL: string; ATrans: TSQLTransaction);
@@ -286,6 +361,16 @@ begin
   finally
     FreeAndNil(LoScript);
     FreeAndNil(LoQuery);
+  end;
+end;
+
+function TChfDBConnection.testConnection: Boolean;
+begin
+  Result := False;
+  try
+    FMonitor.UltTesteConexao := getServeDateTime;
+    Result := True;
+  except
   end;
 end;
 
@@ -1178,8 +1263,12 @@ end;
 
 function TChfDBConnection.getConnected: Boolean;
 begin
-  if Assigned(FDBConn) then
-    Result := FDBConn.Connected;
+  Result := False;
+  try
+    if Assigned(FDBConn) then
+      Result := FDBConn.Connected;
+  except
+  end;
 end;
 
 end.
