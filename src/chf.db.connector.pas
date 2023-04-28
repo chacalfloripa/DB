@@ -6,7 +6,8 @@ interface
 
 uses
   Classes, SysUtils, DB, StrUtils, TypInfo, SQLDB, IBConnection, mysql80conn,
-  MSSQLConn, PQConnection, SQLite3Conn, mysql51conn, mysql55conn, SQLDBLib;
+  MSSQLConn, PQConnection, SQLite3Conn, mysql51conn, mysql55conn, SQLDBLib,
+  syncobjs;
 
 type
   TChfDBEventOnLog = procedure(AMensagem : String) of object;
@@ -36,6 +37,7 @@ type
   TChfDBConnection = class
   private
     FMonitor : TMonitorDBConnection;
+    FAccessLock: TCriticalSection;
     FCharset: String;
     FDatabaseName: String;
     FDBConn : TSQLConnection;
@@ -244,17 +246,20 @@ begin
   DefPrimaryKeySize := 0;
   FDBConn := nil;
   FDefTrans := nil;
-  FMonitor := TMonitorDBConnection.Create(False);
+  FMonitor := TMonitorDBConnection.Create(True);
   FMonitor.DBConnection := Self;
+  FAccessLock := TCriticalSection.Create;
 end;
 
 destructor TChfDBConnection.Destroy;
 begin
   FMonitor.Terminate;
+  FMonitor.WaitFor;
   FreeAndNil(FParams);
   FreeAndNil(FParamsEx);
   FreeAndNil(FDefTrans);
   FreeAndNil(FDBConn);
+  FreeAndNil(FAccessLock);
   inherited Destroy;
 end;
 
@@ -263,52 +268,58 @@ begin
   addLog('Inicio TChfDBConnection.Connect');
   Result := False;
   //
+  FAccessLock.Enter;
   try
-    if not FLibraryName.IsEmpty then
-    begin
-      FDBLib := TSQLDBLibraryLoader.Create(nil);
-      FDBLib.LibraryName := FLibraryName;
-      FDBLib.Enabled := True;
-    end;
-    //
-    if not Assigned(FDBConn) then
-    begin
-      case FDBType of
-           dbtFirebird : FDBConn := TIBConnection.Create(nil);
-        dbtMSSQLServer : FDBConn := TMSSQLConnection.Create(nil);
-         dbtPostgreSQL : FDBConn := TPQConnection.Create(nil);
-            dbtSQLite3 : FDBConn := TSQLite3Connection.Create(nil);
-            dbtMySQL51 : FDBConn := TMySQL51Connection.Create(nil);
-            dbtMySQL55 : FDBConn := TMySQL55Connection.Create(nil);
-            dbtMySQL80 : FDBConn := TMySQL80Connection.Create(nil);
+    try
+      if not FLibraryName.IsEmpty then
+      begin
+        FDBLib := TSQLDBLibraryLoader.Create(nil);
+        FDBLib.LibraryName := FLibraryName;
+        FDBLib.Enabled := True;
       end;
-    end;
-    //
-    if Assigned(FDBConn) then
-    begin
-      if not Assigned(FDefTrans) then
-        FDefTrans := getTransaction(FDBConn);
-
-      FDBConn.Connected:= False;
-      FDBConn.Transaction := FDefTrans;
-      FDBConn.KeepConnection:= True;
-      FDBConn.HostName := HostName;
-      FDBConn.DatabaseName := DatabaseName;
-      FDBConn.UserName := UserName;
-      FDBConn.Password := Password;
-      FDBConn.CharSet := Charset;
-      FDBConn.Params.Text := FParamsEx.Text;
       //
-      FDBConn.Connected := True;
-      Result := FDBConn.Connected;
-    end
-    else
-      raise Exception.Create('TChfDBConnector.Error:0001');
-  except
-    FreeAndNil(FDefTrans);
-    FreeAndNil(FDBConn);
+      if not Assigned(FDBConn) then
+      begin
+        case FDBType of
+             dbtFirebird : FDBConn := TIBConnection.Create(nil);
+          dbtMSSQLServer : FDBConn := TMSSQLConnection.Create(nil);
+           dbtPostgreSQL : FDBConn := TPQConnection.Create(nil);
+              dbtSQLite3 : FDBConn := TSQLite3Connection.Create(nil);
+              dbtMySQL51 : FDBConn := TMySQL51Connection.Create(nil);
+              dbtMySQL55 : FDBConn := TMySQL55Connection.Create(nil);
+              dbtMySQL80 : FDBConn := TMySQL80Connection.Create(nil);
+        end;
+      end;
+      //
+      if Assigned(FDBConn) then
+      begin
+        if not Assigned(FDefTrans) then
+          FDefTrans := getTransaction(FDBConn);
+
+        FDBConn.Connected:= False;
+        FDBConn.Transaction := FDefTrans;
+        FDBConn.KeepConnection:= True;
+        FDBConn.HostName := HostName;
+        FDBConn.DatabaseName := DatabaseName;
+        FDBConn.UserName := UserName;
+        FDBConn.Password := Password;
+        FDBConn.CharSet := Charset;
+        FDBConn.Params.Text := FParamsEx.Text;
+        //
+        FDBConn.Connected := True;
+        FMonitor.Start;
+        Result := FDBConn.Connected;
+      end
+      else
+        raise Exception.Create('TChfDBConnector.Error:0001');
+    except
+      FreeAndNil(FDefTrans);
+      FreeAndNil(FDBConn);
+    end;
+    addLog('Depois de conectar TChfDBConnection.Connect');
+  finally
+    FAccessLock.Leave;
   end;
-  addLog('Depois de conectar TChfDBConnection.Connect');
 end;
 
 function TChfDBConnection.Disconnect: Boolean;
@@ -379,8 +390,45 @@ begin
   if not Assigned(AOwner) then
     AOwner := FDBConn;
   Result := TSQLTransaction.Create(AOwner);
+  Result.Action := caRollback;
   Result.SQLConnection := FDBConn;
   Result.Options := [];
+  case DBType of
+    dbtFirebird :
+      begin
+        Result.Params.Add('read permission');
+        Result.Params.Add('write permission');
+        Result.Params.Add('isc_tpb_read_committed');
+        Result.Params.Add('isc_tpb_wait');
+        Result.Params.Add('isc_tpb_rec_version');
+      end;
+    dbtMSSQLServer :
+      begin
+        Result.Params.Values['isolation_level'] := 'read committed';
+        Result.Params.Values['readonly'] := 'true';
+      end;
+    dbtPostgreSQL :
+      begin
+        Result.Params.Values['isolation_level'] := 'read committed';
+        Result.Params.Values['readonly'] := 'true';
+      end;
+    dbtMySQL51 :
+      begin
+        Result.Params.Values['isolation level'] := 'read committed';
+        Result.Params.Values['read only'] := 'true';
+
+      end;
+    dbtMySQL55 :
+      begin
+        Result.Params.Values['isolation'] := 'READ-COMMITTED';
+        Result.Params.Values['read-only'] := 'true';
+      end;
+    dbtMySQL80 :
+      begin
+        Result.Params.Values['isolation level'] := 'read committed';
+        Result.Params.Values['read only'] := 'true';
+      end;
+  end;
 end;
 
 function TChfDBConnection.getSequence(const ASequenceName: string): String;
@@ -418,7 +466,9 @@ begin
   Result := TSQLQuery.Create(nil);
   Result.SQLTransaction := FDefTrans;
   if Assigned(ATrans) then
-    Result.SQLTransaction := ATrans;
+    Result.SQLTransaction := ATrans
+  else
+    Result.SQLTransaction := getTransaction(Result);
 
   Result.DataBase := FDBConn;
   Result.ReadOnly := False;
@@ -427,7 +477,7 @@ begin
     Result.Close;
     result.SQL.Text := ASQL;
     Result.Prepare;
-    result.Options := [sqoAutoApplyUpdates, sqoAutoCommit];
+    result.Options := [sqoAutoApplyUpdates, sqoAutoCommit, sqoKeepOpenOnCommit];
   end;
 end;
 
