@@ -396,11 +396,10 @@ begin
   case DBType of
     dbtFirebird :
       begin
-        Result.Params.Add('read permission');
-        Result.Params.Add('write permission');
-        Result.Params.Add('isc_tpb_read_committed');
-        Result.Params.Add('isc_tpb_wait');
-        Result.Params.Add('isc_tpb_rec_version');
+        Result.Params.Values['isc_tpb_read_committed'] := 'true';
+        Result.Params.Values['isc_tpb_rec_version'] := 'true';
+        Result.Params.Values['isc_tpb_wait'] := 'true';
+        Result.Params.Values['isc_tpb_lock_timeout'] := '15';
       end;
     dbtMSSQLServer :
       begin
