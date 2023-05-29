@@ -6,15 +6,15 @@ interface
 
 uses
   Classes, SysUtils, DB, StrUtils, TypInfo, SQLDB, IBConnection, mysql80conn,
-  MSSQLConn, PQConnection, SQLite3Conn, mysql51conn, mysql55conn, SQLDBLib,
-  syncobjs;
+  MSSQLConn, PQConnection, SQLite3Conn, mysql51conn, mysql55conn, mysql56conn,
+  mysql57conn, SQLDBLib, syncobjs;
 
 type
   TChfDBEventOnLog = procedure(AMensagem : String) of object;
 
   TChfDBType = (dbtFirebird, dbtMSSQLServer, dbtOracle, dbtPostgreSQL, dbtSQLite3,
-                dbtODBC, dbtSybase, dbtMySQL51, dbtMySQL55, dbtMySQL80);
-
+                dbtODBC, dbtSybase, dbtMySQL51, dbtMySQL55, dbtMySQL56, dbtMySQL57,
+                dbtMySQL80);
 
   TChfDBConnection = class;
 
@@ -287,6 +287,8 @@ begin
               dbtSQLite3 : FDBConn := TSQLite3Connection.Create(nil);
               dbtMySQL51 : FDBConn := TMySQL51Connection.Create(nil);
               dbtMySQL55 : FDBConn := TMySQL55Connection.Create(nil);
+              dbtMySQL56 : FDBConn := TMySQL56Connection.Create(nil);
+              dbtMySQL57 : FDBConn := TMySQL57Connection.Create(nil);
               dbtMySQL80 : FDBConn := TMySQL80Connection.Create(nil);
         end;
       end;
@@ -511,6 +513,7 @@ begin
     dbtMSSQLServer : LsSQL := 'select GETDATE()  as datetime';
     dbtSQLite3 : LsSQL := 'select DATETIME() as datetime';
     dbtPostgreSQL : LsSQL := 'select CURRENT_TIMESTAMP as datetime';
+    dbtMySQL51, dbtMySQL55, dbtMySQL56, dbtMySQL57, dbtMySQL80 : LsSQL := 'SELECT NOW() as datetime';
   end;
   if not LsSQL.IsEmpty then
   begin
@@ -523,7 +526,9 @@ begin
     finally
       FreeAndNil(LoQuery);
     end;
-  end;
+  end
+  else
+    raise Exception.Create('SQL para getServeDateTime não implementado para este banco.');
 end;
 
 function TChfDBConnection.getStrSQLFieldType(const ADataType: TFieldType;
