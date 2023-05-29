@@ -112,6 +112,9 @@
     </RunParams>
     <RequiredPackages>
       <Item>
+        <PackageName Value="SQLDBLaz"/>
+      </Item>
+      <Item>
         <PackageName Value="SynEdit"/>
       </Item>
       <Item>

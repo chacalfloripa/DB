@@ -8,8 +8,8 @@
       <Unit>
         <Filename Value="exemplo.lpr"/>
         <IsPartOfProject Value="True"/>
-        <CursorPos Y="18"/>
-        <UsageCount Value="75"/>
+        <CursorPos X="45" Y="9"/>
+        <UsageCount Value="76"/>
         <Loaded Value="True"/>
       </Unit>
       <Unit>
@@ -21,12 +21,9 @@
         <UnitName Value="Unit1"/>
         <IsVisibleTab Value="True"/>
         <EditorIndex Value="1"/>
-        <TopLine Value="93"/>
-        <CursorPos X="54" Y="100"/>
-        <UsageCount Value="75"/>
-        <Bookmarks Count="1">
-          <Item0 X="22" Y="358" ID="1"/>
-        </Bookmarks>
+        <TopLine Value="204"/>
+        <CursorPos X="85" Y="216"/>
+        <UsageCount Value="76"/>
         <Loaded Value="True"/>
         <LoadedDesigner Value="True"/>
       </Unit>
@@ -34,11 +31,12 @@
         <Filename Value="..\src\chf.db.connector.pas"/>
         <IsPartOfProject Value="True"/>
         <EditorIndex Value="2"/>
-        <TopLine Value="299"/>
-        <CursorPos X="66" Y="304"/>
-        <UsageCount Value="73"/>
-        <Bookmarks Count="1">
+        <TopLine Value="498"/>
+        <CursorPos X="20" Y="518"/>
+        <UsageCount Value="74"/>
+        <Bookmarks Count="2">
           <Item0 Y="248" ID="2"/>
+          <Item1 X="7" Y="517" ID="1"/>
         </Bookmarks>
         <Loaded Value="True"/>
       </Unit>
@@ -89,10 +87,10 @@
       <Unit>
         <Filename Value="C:\DL22\Tools\Laz-2.2.0\fpcsrc\packages\fcl-db\src\sqldb\mssql\mssqlconn.pp"/>
         <UnitName Value="MSSQLConn"/>
-        <EditorIndex Value="3"/>
+        <EditorIndex Value="7"/>
         <TopLine Value="37"/>
         <CursorPos X="3" Y="51"/>
-        <UsageCount Value="20"/>
+        <UsageCount Value="21"/>
         <Loaded Value="True"/>
       </Unit>
       <Unit>
@@ -106,10 +104,10 @@
       <Unit>
         <Filename Value="C:\DL22\Tools\Laz-2.2.0\fpcsrc\packages\fcl-db\src\sqldb\sqldb.pp"/>
         <UnitName Value="SQLDB"/>
-        <EditorIndex Value="4"/>
-        <TopLine Value="180"/>
+        <EditorIndex Value="8"/>
+        <TopLine Value="178"/>
         <CursorPos X="18" Y="270"/>
-        <UsageCount Value="20"/>
+        <UsageCount Value="21"/>
         <Loaded Value="True"/>
       </Unit>
       <Unit>
@@ -130,9 +128,11 @@
       <Unit>
         <Filename Value="C:\DL22\Tools\Laz-2.2.0\fpcsrc\packages\fcl-db\src\sqldb\postgres\pqconnection.pp"/>
         <UnitName Value="PQConnection"/>
-        <EditorIndex Value="-1"/>
-        <CursorPos X="6"/>
-        <UsageCount Value="7"/>
+        <EditorIndex Value="3"/>
+        <TopLine Value="254"/>
+        <CursorPos X="3" Y="272"/>
+        <UsageCount Value="11"/>
+        <Loaded Value="True"/>
       </Unit>
       <Unit>
         <Filename Value="C:\DL22\Tools\Laz-2.2.0\fpcsrc\packages\fcl-db\src\sqldb\sqlite\sqlite3conn.pp"/>
@@ -143,19 +143,17 @@
       </Unit>
       <Unit>
         <Filename Value="C:\DL22\esyspark\modules\esysframework\src\Database\ESF.Conn.pas"/>
-        <EditorIndex Value="6"/>
+        <EditorIndex Value="-1"/>
         <TopLine Value="376"/>
         <CursorPos Y="398"/>
         <UsageCount Value="18"/>
-        <Loaded Value="True"/>
       </Unit>
       <Unit>
         <Filename Value="C:\DL22\esyspark\modules\esysframework\src\Database\ESF.ConnSQLDB.pas"/>
-        <EditorIndex Value="5"/>
+        <EditorIndex Value="-1"/>
         <TopLine Value="141"/>
         <CursorPos X="15" Y="167"/>
         <UsageCount Value="13"/>
-        <Loaded Value="True"/>
       </Unit>
       <Unit>
         <Filename Value="C:\DL22\Tools\Laz-2.2.0\lazarus\components\synedit\synedit.pp"/>
@@ -195,125 +193,143 @@
         <CursorPos Y="3594"/>
         <UsageCount Value="10"/>
       </Unit>
+      <Unit>
+        <Filename Value="C:\DL22\Tools\Laz-2.2.0\fpcsrc\packages\fcl-db\src\sqldb\mysql\mysql56conn.pas"/>
+        <EditorIndex Value="6"/>
+        <CursorPos X="16" Y="8"/>
+        <UsageCount Value="11"/>
+        <Loaded Value="True"/>
+      </Unit>
+      <Unit>
+        <Filename Value="C:\DL22\Tools\Laz-2.2.0\fpcsrc\packages\fcl-db\src\sqldb\mysql\mysql51conn.pas"/>
+        <EditorIndex Value="5"/>
+        <UsageCount Value="11"/>
+        <Loaded Value="True"/>
+      </Unit>
+      <Unit>
+        <Filename Value="C:\DL22\Tools\Laz-2.2.0\fpcsrc\packages\fcl-db\src\sqldb\mysql\mysql55conn.pas"/>
+        <EditorIndex Value="4"/>
+        <UsageCount Value="11"/>
+        <Loaded Value="True"/>
+      </Unit>
     </Units>
     <JumpHistory HistoryIndex="29">
       <Position>
-        <Filename Value="C:\DL22\Tools\Laz-2.2.0\fpcsrc\packages\fcl-db\src\sqldb\mssql\mssqlconn.pp"/>
-        <Caret Line="1075" Column="54" TopLine="1043"/>
+        <Filename Value="unit1.pas"/>
+        <Caret Line="410" Column="12" TopLine="393"/>
       </Position>
       <Position>
         <Filename Value="..\src\chf.db.connector.pas"/>
-        <Caret Line="210" Column="18" TopLine="193"/>
-      </Position>
-      <Position>
-        <Filename Value="C:\DL22\Tools\Laz-2.2.0\fpcsrc\packages\fcl-db\src\sqldb\mssql\mssqlconn.pp"/>
-        <Caret Line="51" Column="3" TopLine="37"/>
-      </Position>
-      <Position>
-        <Filename Value="unit1.pas"/>
-        <Caret Line="193" Column="45" TopLine="167"/>
-      </Position>
-      <Position>
-        <Filename Value="unit1.pas"/>
-        <Caret Line="221" Column="36" TopLine="207"/>
-      </Position>
-      <Position>
-        <Filename Value="unit1.pas"/>
-        <Caret Line="222" Column="36" TopLine="208"/>
-      </Position>
-      <Position>
-        <Filename Value="unit1.pas"/>
-        <Caret Line="224" Column="36" TopLine="210"/>
-      </Position>
-      <Position>
-        <Filename Value="unit1.pas"/>
-        <Caret Line="335" Column="5" TopLine="332"/>
-      </Position>
-      <Position>
-        <Filename Value="unit1.pas"/>
-        <Caret Line="121" Column="27" TopLine="101"/>
-      </Position>
-      <Position>
-        <Filename Value="unit1.pas"/>
-        <Caret Line="122" Column="27" TopLine="102"/>
-      </Position>
-      <Position>
-        <Filename Value="unit1.pas"/>
-        <Caret Line="339" Column="25" TopLine="334"/>
-      </Position>
-      <Position>
-        <Filename Value="unit1.pas"/>
-        <Caret Line="122" Column="28" TopLine="115"/>
-      </Position>
-      <Position>
-        <Filename Value="unit1.pas"/>
-        <Caret Line="349" Column="21" TopLine="335"/>
-      </Position>
-      <Position>
-        <Filename Value="unit1.pas"/>
-        <Caret Line="347" TopLine="335"/>
+        <Caret Line="291" Column="70" TopLine="280"/>
       </Position>
       <Position>
         <Filename Value="..\src\chf.db.connector.pas"/>
-        <Caret Line="53" Column="74" TopLine="35"/>
-      </Position>
-      <Position>
-        <Filename Value="C:\DL22\esyspark\modules\esysframework\src\Database\ESF.ConnSQLDB.pas"/>
-        <Caret Line="86" Column="23" TopLine="63"/>
+        <Caret Line="10" Column="34"/>
       </Position>
       <Position>
         <Filename Value="..\src\chf.db.connector.pas"/>
-        <Caret Line="311" TopLine="303"/>
-      </Position>
-      <Position>
-        <Filename Value="..\src\chf.db.connector.pas"/>
-        <Caret Line="50" Column="14" TopLine="34"/>
-      </Position>
-      <Position>
-        <Filename Value="..\src\chf.db.connector.pas"/>
-        <Caret Line="289" Column="3" TopLine="284"/>
-      </Position>
-      <Position>
-        <Filename Value="..\src\chf.db.connector.pas"/>
-        <Caret Line="208" TopLine="191"/>
-      </Position>
-      <Position>
-        <Filename Value="..\src\chf.db.connector.pas"/>
-        <Caret Line="304" Column="79" TopLine="284"/>
+        <Caret Line="290" Column="25" TopLine="272"/>
       </Position>
       <Position>
         <Filename Value="unit1.pas"/>
-        <Caret Line="344" Column="14" TopLine="323"/>
-      </Position>
-      <Position>
-        <Filename Value="unit1.pas"/>
-        <Caret Line="356" Column="34" TopLine="350"/>
-      </Position>
-      <Position>
-        <Filename Value="unit1.pas"/>
-        <Caret Line="341" Column="5" TopLine="322"/>
+        <Caret Line="8" Column="55"/>
       </Position>
       <Position>
         <Filename Value="unit1.pas"/>
       </Position>
       <Position>
         <Filename Value="unit1.pas"/>
-        <Caret Line="123" Column="27" TopLine="93"/>
+        <Caret Line="9" Column="73"/>
       </Position>
       <Position>
         <Filename Value="..\src\chf.db.connector.pas"/>
-        <Caret Line="302" Column="29" TopLine="284"/>
+        <Caret Line="17" Column="29"/>
       </Position>
       <Position>
         <Filename Value="..\src\chf.db.connector.pas"/>
-        <Caret Line="53" Column="66" TopLine="53"/>
+        <Caret Line="830" Column="120" TopLine="807"/>
+      </Position>
+      <Position>
+        <Filename Value="..\src\chf.db.connector.pas"/>
+        <Caret Line="531" Column="36" TopLine="498"/>
+      </Position>
+      <Position>
+        <Filename Value="..\src\chf.db.connector.pas"/>
+      </Position>
+      <Position>
+        <Filename Value="..\src\chf.db.connector.pas"/>
+        <Caret Line="531" Column="45" TopLine="500"/>
+      </Position>
+      <Position>
+        <Filename Value="..\src\chf.db.connector.pas"/>
+        <Caret Line="832" Column="45" TopLine="802"/>
+      </Position>
+      <Position>
+        <Filename Value="..\src\chf.db.connector.pas"/>
+      </Position>
+      <Position>
+        <Filename Value="..\src\chf.db.connector.pas"/>
+        <Caret Line="372" Column="48" TopLine="341"/>
+      </Position>
+      <Position>
+        <Filename Value="..\src\chf.db.connector.pas"/>
+        <Caret Line="453" Column="48" TopLine="422"/>
+      </Position>
+      <Position>
+        <Filename Value="..\src\chf.db.connector.pas"/>
+        <Caret Line="457" Column="48" TopLine="426"/>
+      </Position>
+      <Position>
+        <Filename Value="..\src\chf.db.connector.pas"/>
+        <Caret Line="531" Column="44" TopLine="500"/>
+      </Position>
+      <Position>
+        <Filename Value="..\src\chf.db.connector.pas"/>
+        <Caret Line="829" Column="46" TopLine="798"/>
+      </Position>
+      <Position>
+        <Filename Value="..\src\chf.db.connector.pas"/>
+        <Caret Line="832" Column="44" TopLine="802"/>
+      </Position>
+      <Position>
+        <Filename Value="..\src\chf.db.connector.pas"/>
+        <Caret Line="879" Column="46" TopLine="849"/>
+      </Position>
+      <Position>
+        <Filename Value="..\src\chf.db.connector.pas"/>
+        <Caret Line="1113" Column="44" TopLine="1083"/>
+      </Position>
+      <Position>
+        <Filename Value="..\src\chf.db.connector.pas"/>
+        <Caret Line="1160" Column="44" TopLine="1129"/>
+      </Position>
+      <Position>
+        <Filename Value="..\src\chf.db.connector.pas"/>
+        <Caret Line="518" Column="20" TopLine="498"/>
       </Position>
       <Position>
         <Filename Value="unit1.pas"/>
-        <Caret Line="342" Column="33" TopLine="325"/>
+        <Caret Line="218" Column="45" TopLine="200"/>
       </Position>
       <Position>
         <Filename Value="unit1.pas"/>
+        <Caret Line="10" Column="46" TopLine="103"/>
+      </Position>
+      <Position>
+        <Filename Value="unit1.pas"/>
+        <Caret Line="218" Column="37" TopLine="200"/>
+      </Position>
+      <Position>
+        <Filename Value="unit1.pas"/>
+        <Caret Line="219" Column="37" TopLine="201"/>
+      </Position>
+      <Position>
+        <Filename Value="unit1.pas"/>
+        <Caret Line="220" Column="37" TopLine="202"/>
+      </Position>
+      <Position>
+        <Filename Value="unit1.pas"/>
+        <Caret Line="221" Column="37" TopLine="203"/>
       </Position>
     </JumpHistory>
     <RunParams>
@@ -334,6 +350,13 @@
         <WatchKind Value="wpkWrite"/>
         <Source Value="C:\DL22\Tools\Laz-2.2.0\fpcsrc\packages\fcl-db\src\sqldb\sqldb.pp"/>
         <Line Value="1438"/>
+      </Item>
+      <Item>
+        <Kind Value="bpkSource"/>
+        <WatchScope Value="wpsLocal"/>
+        <WatchKind Value="wpkWrite"/>
+        <Source Value="unit1.pas"/>
+        <Line Value="422"/>
       </Item>
     </BreakPoints>
   </Debugging>

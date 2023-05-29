@@ -7,8 +7,9 @@ interface
 uses
   Classes, SysUtils, Forms, Controls, Graphics, Dialogs, ComCtrls, ExtCtrls,
   SynHighlighterJScript, chf.demobase.gui.main, SQLDB, SQLDBLib, mysql80conn,
-  mysql55conn, DB, oracleconnection, SQLite3Conn, PQConnection, MSSQLConn,
-  IBConnection, StdCtrls, DBCtrls, SynEdit, DBGrids, chf.db.connector;
+  mysql55conn, mysql57conn, mysql56conn, DB, oracleconnection, SQLite3Conn,
+  PQConnection, MSSQLConn, IBConnection, StdCtrls, DBCtrls, SynEdit, DBGrids,
+  math, chf.db.connector;
 
 type
 
@@ -29,6 +30,7 @@ type
     Button20: TButton;
     Button21: TButton;
     Button22: TButton;
+    Button23: TButton;
     Button3: TButton;
     Button4: TButton;
     Button5: TButton;
@@ -98,10 +100,15 @@ type
     memConfigMSSQL: TSynEdit;
     memConfigMySQL51: TSynEdit;
     memConfigMySQL55: TSynEdit;
+    memConfigMySQL56: TSynEdit;
+    memConfigMySQL57: TSynEdit;
     memConfigMySQL80: TSynEdit;
     memConfigPostgreSQL: TSynEdit;
     memConfigSQLite3: TSynEdit;
     memConsultaSQL: TMemo;
+    MySQL56Connection1: TMySQL56Connection;
+    MySQL57Connection1: TMySQL57Connection;
+    MySQL57Connection2: TMySQL57Connection;
     PageControl1: TPageControl;
     tabParamConnSQLite: TPageControl;
     Panel1: TPanel;
@@ -126,6 +133,8 @@ type
     TabSheet4: TTabSheet;
     TabSheet5: TTabSheet;
     TabSheet6: TTabSheet;
+    TabSheet7: TTabSheet;
+    TabSheet8: TTabSheet;
     procedure Button10Click(Sender: TObject);
     procedure Button11Click(Sender: TObject);
     procedure Button12Click(Sender: TObject);
@@ -139,6 +148,7 @@ type
     procedure Button20Click(Sender: TObject);
     procedure Button21Click(Sender: TObject);
     procedure Button22Click(Sender: TObject);
+    procedure Button23Click(Sender: TObject);
     procedure Button2Click(Sender: TObject);
     procedure Button3Click(Sender: TObject);
     procedure Button4Click(Sender: TObject);
@@ -148,7 +158,6 @@ type
     procedure Button8Click(Sender: TObject);
     procedure Button9Click(Sender: TObject);
     procedure FormCreate(Sender: TObject);
-    procedure ScrollBox1Click(Sender: TObject);
   private
      FDBConnection : TChfDBConnection;
      FDtsQuery : TSQLQuery;
@@ -205,6 +214,18 @@ begin
           FDBConnection := TChfDBConnection.Create(dbtMySQL55);
           FDBConnection.OnLog := @WriteLog;
           FDBConnection.Params := memConfigMySQL55.Text;
+        end;
+      'MySQL56' :
+        begin
+          FDBConnection := TChfDBConnection.Create(dbtMySQL56);
+          FDBConnection.OnLog := @WriteLog;
+          FDBConnection.Params := memConfigMySQL56.Text;
+        end;
+      'MySQL57' :
+        begin
+          FDBConnection := TChfDBConnection.Create(dbtMySQL57);
+          FDBConnection.OnLog := @WriteLog;
+          FDBConnection.Params := memConfigMySQL57.Text;
         end;
       'MySQL80' :
         begin
@@ -384,6 +405,27 @@ begin
   end
   else
     ShowMessage('Sem conexão com o banco de dados.');
+end;
+
+procedure TForm1.Button23Click(Sender: TObject);
+var
+  i : integer = 0;
+  s : String = '';
+begin
+  repeat
+    try
+      memConsultaSQL.Text := 'select * from comanda where status <> ''L'' and num_comanda = '+RandomRange(1, 14).ToString;
+      Button14Click(Sender)
+    except
+      on e :Exception do
+      begin
+        s := e.Message;
+      end;
+    end;
+    Sleep(1000);
+    inc(i);
+    Application.ProcessMessages;
+  until i = 1000;
 end;
 
 procedure TForm1.Button11Click(Sender: TObject);
@@ -663,11 +705,6 @@ procedure TForm1.FormCreate(Sender: TObject);
 begin
   inherited;
   cbxLogAtivo.Checked := True;
-end;
-
-procedure TForm1.ScrollBox1Click(Sender: TObject);
-begin
-
 end;
 
 end.
