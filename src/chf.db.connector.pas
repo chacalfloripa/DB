@@ -467,10 +467,7 @@ begin
   Result := TSQLQuery.Create(nil);
   Result.SQLTransaction := FDefTrans;
   if Assigned(ATrans) then
-    Result.SQLTransaction := ATrans
-  else
-    Result.SQLTransaction := getTransaction(Result);
-
+    Result.SQLTransaction := ATrans;
   Result.DataBase := FDBConn;
   Result.ReadOnly := False;
   if not ASQL.IsEmpty then
